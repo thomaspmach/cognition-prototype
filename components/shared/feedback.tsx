@@ -15,7 +15,7 @@ export function Feedback({
       role={tone === "error" ? "alert" : "status"}
       className={cn(
         "flex items-start gap-3 rounded-lg border px-4 py-3 text-sm",
-        tone === "info" && "border-indigo-200 bg-indigo-50 text-indigo-950",
+        tone === "info" && "border-blue-200 bg-blue-50 text-blue-950",
         tone === "success" && "border-emerald-200 bg-emerald-50 text-emerald-950",
         tone === "error" && "border-rose-200 bg-rose-50 text-rose-950",
       )}

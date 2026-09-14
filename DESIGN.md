@@ -1,6 +1,6 @@
 # Workspace visual foundation
 
-This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses a graphite sidebar and restrained indigo actions. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
+This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses a graphite sidebar and restrained cobalt-blue actions. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
 
 ## Tokens
 
@@ -14,13 +14,13 @@ The implemented source of truth is `app/globals.css`. Tailwind's semantic colors
 | Quiet surface | `muted` | `#f0f1f4` |
 | Secondary text | `muted-foreground` | `#626977` |
 | Borders | `border` | `#e1e4ea` |
-| Primary action | `primary` / `primary-foreground` | `#4f46e5` / `#ffffff` |
-| Focus outline | `ring` | `#6366f1` |
+| Primary action | `primary` / `primary-foreground` | `#175cd3` / `#ffffff` |
+| Focus outline | `ring` | `#2563eb` |
 | Destructive text | `destructive` | `#b42338` |
 | Sidebar surface / text | `sidebar` / `sidebar-foreground` | `#20232b` / `#f4f5f8` |
 | Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `#afb5c3` / `#373c48` |
 
-The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and `primary: #c7c9ff`; its active inset marker and focus ring use `#a5a8ff`. Use semantic tokens for core surfaces. Status messages use restrained Tailwind indigo, emerald and rose backgrounds with dark text. Always pair status color with words.
+The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and `primary: #bfdbfe`; its active inset marker, footer indicator and focus ring use `#93c5fd`. Text selection uses `#dbeafe` with `#1e3a8a` text. Use semantic tokens for core surfaces. Catalog accents and informational messages use restrained Tailwind blue surfaces; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
 
 ## Type, spacing and shape
 
@@ -57,7 +57,7 @@ The KYC foundation uses an empty queue and an explicitly labeled, read-only deta
 ## Accessibility and motion
 
 - Provide a skip link, landmarks, headings, input labels and visible text for every status. Decorative icons are hidden from assistive technology.
-- Interactive elements show a 2px indigo focus outline with 3px offset. Disabled previews remain explained in both surfaces.
+- Interactive elements show a 2px blue focus outline with 3px offset. Disabled previews remain explained in both surfaces.
 - Sidebar toggle and links work by keyboard. Detail panels trap focus, close with Escape or a close control and return focus to the trigger.
 - Use Be UI's `useReducedMotion()` behavior. Reduced motion removes positional transitions in overlays; brief opacity fades may remain. CSS disables decorative animation and transitions under `prefers-reduced-motion: reduce`.
 - New motion should use opacity or transforms. Do not introduce spring movement in the reduced-motion path.

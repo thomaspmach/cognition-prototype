@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 const navClass =
   "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-sidebar-muted transition-colors hover:bg-white/5 hover:text-sidebar-foreground";
-const activeClass = "bg-white/8 text-sidebar-foreground shadow-[inset_2px_0_0_#a5a8ff]";
+const activeClass = "bg-white/8 text-sidebar-foreground shadow-[inset_2px_0_0_var(--ring)]";
 
 function SidebarNavigation() {
   const pathname = usePathname();
@@ -128,7 +128,7 @@ function SidebarNavigation() {
       </AnimatedSidebarContent>
       <AnimatedSidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex items-center gap-3 px-2">
-          <Circle aria-hidden="true" className="size-3 shrink-0 text-indigo-300" />
+          <Circle aria-hidden="true" className="size-3 shrink-0 text-ring" />
           <div className="group-data-[state=collapsed]/sidebar:hidden">
             <p className="text-xs font-medium text-sidebar-foreground">Foundation build</p>
             <p className="mt-1 text-[11px] text-sidebar-muted">Internal tools · Prototype</p>

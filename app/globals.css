@@ -9,9 +9,9 @@
   --muted: #f0f1f4;
   --muted-foreground: #626977;
   --border: #e1e4ea;
-  --primary: #4f46e5;
+  --primary: #175cd3;
   --primary-foreground: #ffffff;
-  --ring: #6366f1;
+  --ring: #2563eb;
   --destructive: #b42338;
   --sidebar: #20232b;
   --sidebar-foreground: #f4f5f8;
@@ -73,8 +73,8 @@
   }
 
   ::selection {
-    background: #e0e1ff;
-    color: #292475;
+    background: #dbeafe;
+    color: #1e3a8a;
   }
 }
 
@@ -86,8 +86,8 @@
   --muted: #2e3340;
   --muted-foreground: var(--sidebar-muted);
   --border: var(--sidebar-border);
-  --primary: #c7c9ff;
-  --ring: #a5a8ff;
+  --primary: #bfdbfe;
+  --ring: #93c5fd;
 }
 
 @media (prefers-reduced-motion: reduce) {
