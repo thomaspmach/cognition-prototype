@@ -2,7 +2,7 @@
 
 A shared internal-tools foundation built with Next.js App Router, TypeScript, Tailwind CSS and actual Be UI source.
 
-This implements [issue #1](https://github.com/thomaspmach/cognition-prototype/issues/1) within [epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7). It is a local UI prototype: no login, database, customer data or business actions.
+The application implements [issue #1](https://github.com/thomaspmach/cognition-prototype/issues/1) within [epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7); [issue #2](https://github.com/thomaspmach/cognition-prototype/issues/2) adds Engineering guidance and repository skills. It is a local UI prototype: no login, database, customer data or business actions.
 
 ## Run locally
 
@@ -58,9 +58,22 @@ The browser suite covers route changes, persistent sidebar state, disabled previ
 - **KYC Case Review (`/tools/kyc`):** minimal foundation demonstrating shared navigation, an empty queue, status/feedback and a read-only detail panel example.
 - **Refunds Dashboard and Feature Flag Admin:** visible **Preview only** entries with disabled navigation, no links and no pages.
 
-The registry's access requirements describe planned roles. They do not restrict access. Authentication, persisted cases, filters, assignment and decisions belong to issue #3. Engineering standards/skills, configuration controls and later epic work are not implemented here.
+The registry's access requirements describe planned roles. They do not restrict access. Authentication, persisted cases, filters, assignment and decisions belong to issue #3. Bounded presentation configuration and independently enforced merge controls belong to issue #4 and are not implemented here.
 
-Next's automatic agent-instruction generation is disabled (`agentRules: false`); repository instructions are reserved for issue #2.
+Next's automatic agent-instruction generation is disabled (`agentRules: false`); the project maintains its own [AGENTS.md](AGENTS.md).
+
+## Engineering guidance and Devin Cloud skills
+
+Start with [AGENTS.md](AGENTS.md) for commands, module navigation and branch/PR practice. Read [architecture](docs/architecture.md) for extension steps, [tool standards](docs/internal-tools-standards.md) for discovery and completion criteria, [security](docs/security.md) for control boundaries, and [DESIGN.md](DESIGN.md) before UI changes.
+
+Use the two repository skills for separate tasks:
+
+- [build-internal-tool](.agents/skills/build-internal-tool/SKILL.md): turn a business need into a confirmed specification, then implementation and a PR.
+- [change-internal-tool](.agents/skills/change-internal-tool/SKILL.md): describe an outcome for an existing tool; Devin locates the relevant code/capabilities, verifies the change and delivers a PR.
+
+In Devin Cloud, include `@skills:build-internal-tool` or `@skills:change-internal-tool` with the business request. No source paths or technical PRD are required from the requester. [Cloud Skills documentation](https://docs.devin.ai/product-guides/skills) describes discovery, invocation and supported format. Each skill lives under `.agents/skills/<skill-name>/SKILL.md` with YAML `name` and `description`; choose one rather than assuming simultaneous active skills.
+
+These are reusable procedures, not runtime or merge enforcement. New tools and changes currently need human Engineering review. Skill-format checks and documentation walkthroughs are distinct from the end-to-end Cloud workflow validation tracked in [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5), including guided KYC creation during #3. Instructions must be refined against #3/#4 when those implementations arrive.
 
 ## Project map
 
