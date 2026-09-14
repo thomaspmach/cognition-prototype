@@ -21,8 +21,8 @@ import { availabilityLabels, toolRegistry } from "@/lib/tool-registry";
 import { cn } from "@/lib/utils";
 
 const navClass =
-  "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-sidebar-muted transition-colors hover:bg-white/5 hover:text-sidebar-foreground";
-const activeClass = "bg-white/8 text-sidebar-foreground shadow-[inset_2px_0_0_var(--ring)]";
+  "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-sidebar-muted transition-colors hover:bg-muted hover:text-sidebar-foreground";
+const activeClass = "bg-muted text-sidebar-foreground";
 
 function SidebarNavigation() {
   const pathname = usePathname();
@@ -46,11 +46,11 @@ function SidebarNavigation() {
       panelClassName="bg-sidebar text-sidebar-foreground"
     >
       <div className="flex h-16 items-center gap-3 px-5">
-        <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-white/20">
+        <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-sidebar-border">
           <Layers aria-hidden="true" className="size-4" />
         </span>
         <span className="font-semibold tracking-tight group-data-[state=collapsed]/sidebar:hidden">
-          cognition<span className="ml-1 font-normal text-sidebar-muted">/ tools</span>
+          company<span className="ml-1 font-normal text-sidebar-muted">/ tools</span>
         </span>
       </div>
       <AnimatedSidebarContent className="px-3">

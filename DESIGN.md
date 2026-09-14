@@ -1,6 +1,6 @@
 # Workspace visual foundation
 
-This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses a graphite sidebar and blue actions based on `#0457e5`. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
+This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses matching white sidebar and header surfaces with blue actions based on `#0457e5`. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
 
 ## Tokens
 
@@ -17,24 +17,24 @@ The implemented source of truth is `app/globals.css`. Tailwind's semantic colors
 | Primary action | `primary` / `primary-foreground` | `#0457e5` / `#ffffff` |
 | Focus outline | `ring` | `var(--primary)` → `#0457e5` |
 | Destructive text | `destructive` | `#b42338` |
-| Sidebar surface / text | `sidebar` / `sidebar-foreground` | `#20232b` / `#f4f5f8` |
-| Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `#afb5c3` / `#373c48` |
+| Sidebar surface / text | `sidebar` / `sidebar-foreground` | `var(--card)` / `var(--foreground)` → `#ffffff` / `#20232b` |
+| Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `var(--muted-foreground)` / `var(--border)` → `#626977` / `#e1e4ea` |
 
-The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and `primary: #cdddfa`; its active inset marker, footer indicator and focus ring use `#9bbcf5`. These blue accents mix the base with 80% and 60% white respectively. Text selection uses `#e6eefc` (90% white) with `#023489` text (40% black). Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
+The sidebar shares the header's white surface and neutral border, inheriting the workspace's text, primary and focus colors. Active and hovered navigation items use `muted: #f0f1f4`; the selected item has no accent border or inset shadow. Text selection uses `#e6eefc` (90% white) with `#023489` text (40% black). Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
 
 ## Type, spacing and shape
 
 - **Font:** locally bundled Geist Variable, system sans-serif fallback; weights 400, 500 and 600. No network font service. The SIL Open Font License is in `licenses/geist-OFL.txt`.
 - **Hierarchy:** page title 28/36px, section/card title 14–16px semibold, panel title 18px, body 14px with 21–24px line height, metadata 11–12px. Reserve uppercase tracking for small section labels.
 - **Spacing:** a 4px scale. Typical gaps are 8/12/16px, card padding 20px, panel padding 24px, section separation 32px, and desktop main padding 40px (32px on tablets, 20px on phones).
-- **Shape:** 1px borders; 6px status corners, 8px controls, 12px cards. Shadows are limited to modal separation and the active navigation marker.
+- **Shape:** 1px borders; 6px status corners, 8px controls, 12px cards. Shadows are limited to overlays.
 - **Density:** 48px table rows, 36–40px action controls, minimum 44px navigation rows. Avoid decorative empty space within controls.
 
 ## Shell and navigation
 
-`WorkspaceShell` lives in the root layout and survives client navigation. The Be UI sidebar is 264px wide, collapsible to a 68px icon rail, and becomes an 18rem modal drawer (capped at 88vw) below 768px. The sidebar's own scope supplies its foreground and mobile width, including when portaled outside the provider. Content has `min-width: 0`; table overflow scrolls inside its own viewport. Cards move from three columns at 1280px to two on tablets and one on phones.
+`WorkspaceShell` lives in the root layout and survives client navigation. The sidebar brand reads **company / tools**. The Be UI sidebar is 264px wide, collapsible to a 68px icon rail, and becomes an 18rem modal drawer (capped at 88vw) below 768px. The sidebar's own scope supplies its white background, foreground and mobile width, including when portaled outside the provider. Content has `min-width: 0`; table overflow scrolls inside its own viewport. Cards move from three columns at 1280px to two on tablets and one on phones.
 
-Both navigation and catalog consume `lib/tool-registry.ts`. Active destinations have a light inset marker, tinted surface and `aria-current="page"`. Next.js links retain sidebar state when switching destinations. Icon-only links retain accessible names and hover titles.
+Both navigation and catalog consume `lib/tool-registry.ts`. Active destinations have a neutral gray surface, dark text and `aria-current="page"`. Keyboard focus retains its blue outline independently of selection. Next.js links retain sidebar state when switching destinations. Icon-only links retain accessible names and hover titles.
 
 KYC is labeled **UI foundation** until its functional workflow is implemented. Refunds and Feature Flags are **Preview only**: disabled sidebar buttons, no catalog link and no route. Each preview explains that it is not implemented. Planned access labels are metadata, not authorization.
 
