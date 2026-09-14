@@ -10,7 +10,6 @@ import {
   AnimatedSidebarFooter,
   AnimatedSidebarGroup,
   AnimatedSidebarGroupLabel,
-  AnimatedSidebarMenu,
   AnimatedSidebarMenuItem,
   AnimatedSidebarProvider,
   AnimatedSidebarTrigger,
@@ -23,6 +22,7 @@ import { cn } from "@/lib/utils";
 const navClass =
   "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-sidebar-muted transition-colors hover:bg-muted hover:text-sidebar-foreground";
 const activeClass = "bg-muted text-sidebar-foreground";
+const menuClass = "flex w-full min-w-0 list-none flex-col gap-1";
 
 function SidebarNavigation() {
   const pathname = usePathname();
@@ -53,13 +53,13 @@ function SidebarNavigation() {
           company<span className="ml-1 font-normal text-sidebar-muted">/ tools</span>
         </span>
       </div>
-      <AnimatedSidebarContent className="px-3">
+      <AnimatedSidebarContent className="px-3 pt-15">
         <nav aria-label="Tools">
           <AnimatedSidebarGroup className="p-0">
-            <AnimatedSidebarGroupLabel className="px-3 text-[10px] uppercase tracking-widest">
+            <AnimatedSidebarGroupLabel className="h-auto px-3 text-[10px] leading-4 uppercase tracking-widest">
               Workspace
             </AnimatedSidebarGroupLabel>
-            <AnimatedSidebarMenu>
+            <ul className={menuClass}>
               <AnimatedSidebarMenuItem>
                 <Link
                   href="/"
@@ -73,13 +73,13 @@ function SidebarNavigation() {
                   <span className="group-data-[state=collapsed]/sidebar:hidden">Overview</span>
                 </Link>
               </AnimatedSidebarMenuItem>
-            </AnimatedSidebarMenu>
+            </ul>
           </AnimatedSidebarGroup>
           <AnimatedSidebarGroup className="mt-6 p-0">
-            <AnimatedSidebarGroupLabel className="px-3 text-[10px] uppercase tracking-widest">
+            <AnimatedSidebarGroupLabel className="h-auto px-3 text-[10px] leading-4 uppercase tracking-widest">
               Internal tools
             </AnimatedSidebarGroupLabel>
-            <AnimatedSidebarMenu className="gap-1">
+            <ul className={menuClass}>
               {toolRegistry.map((tool) => (
                 <AnimatedSidebarMenuItem key={tool.id}>
                   {tool.route ? (
@@ -107,7 +107,7 @@ function SidebarNavigation() {
                         aria-label={`${tool.name} — Preview only`}
                         aria-describedby={`nav-preview-${tool.id}`}
                         title={`${tool.name} — Preview only. Not implemented.`}
-                        className={cn(navClass, "cursor-not-allowed hover:bg-transparent")}
+                        className={cn(navClass, "cursor-not-allowed hover:bg-transparent hover:text-sidebar-muted")}
                       >
                         <ToolIcon id={tool.id} className="size-4 shrink-0" />
                         <span className="group-data-[state=collapsed]/sidebar:hidden">
@@ -122,7 +122,7 @@ function SidebarNavigation() {
                   )}
                 </AnimatedSidebarMenuItem>
               ))}
-            </AnimatedSidebarMenu>
+            </ul>
           </AnimatedSidebarGroup>
         </nav>
       </AnimatedSidebarContent>
@@ -131,7 +131,7 @@ function SidebarNavigation() {
           <Circle aria-hidden="true" className="size-3 shrink-0 text-ring" />
           <div className="group-data-[state=collapsed]/sidebar:hidden">
             <p className="text-xs font-medium text-sidebar-foreground">Foundation build</p>
-            <p className="mt-1 text-[11px] text-sidebar-muted">Internal tools · Prototype</p>
+            <p className="text-[11px] text-sidebar-muted">Internal tools · Prototype</p>
           </div>
         </div>
       </AnimatedSidebarFooter>

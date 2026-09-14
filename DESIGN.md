@@ -20,7 +20,7 @@ The implemented source of truth is `app/globals.css`. Tailwind's semantic colors
 | Sidebar surface / text | `sidebar` / `sidebar-foreground` | `var(--card)` / `var(--foreground)` → `#ffffff` / `#20232b` |
 | Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `var(--muted-foreground)` / `var(--border)` → `#626977` / `#e1e4ea` |
 
-The sidebar shares the header's white surface and neutral border, inheriting the workspace's text, primary and focus colors. Active and hovered navigation items use `muted: #f0f1f4`; the selected item has no accent border or inset shadow. Text selection uses `#e6eefc` (90% white) with `#023489` text (40% black). Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
+The sidebar shares the header's white surface and neutral border, inheriting the workspace's text, primary and focus colors. Active and hovered navigation links use `muted: #f0f1f4` across their full height; disabled previews keep their neutral text and transparent background on hover. The selected item has no accent border or inset shadow. Text selection uses `#e6eefc` (90% white) with `#023489` text (40% black). Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
 
 ## Type, spacing and shape
 
@@ -33,6 +33,8 @@ The sidebar shares the header's white surface and neutral border, inheriting the
 ## Shell and navigation
 
 `WorkspaceShell` lives in the root layout and survives client navigation. The sidebar brand reads **company / tools**. The Be UI sidebar is 264px wide, collapsible to a 68px icon rail, and becomes an 18rem modal drawer (capped at 88vw) below 768px. The sidebar's own scope supplies its white background, foreground and mobile width, including when portaled outside the provider. Content has `min-width: 0`; table overflow scrolls inside its own viewport. Cards move from three columns at 1280px to two on tablets and one on phones.
+
+Navigation content has 60px top padding below the brand. Section labels use their natural 16px line height with a 4px bottom gap. The footer's two text lines have no extra margin between them. Semantic lists compose Be UI sidebar items with Next.js links and disabled preview buttons; hover backgrounds belong to each control and follow its content height.
 
 Both navigation and catalog consume `lib/tool-registry.ts`. Active destinations have a neutral gray surface, dark text and `aria-current="page"`. Keyboard focus retains its blue outline independently of selection. Next.js links retain sidebar state when switching destinations. Icon-only links retain accessible names and hover titles.
 
