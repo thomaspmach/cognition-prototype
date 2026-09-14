@@ -1,0 +1,96 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+:root {
+  color-scheme: light;
+  --background: #f7f8fa;
+  --foreground: #20232b;
+  --card: #ffffff;
+  --muted: #f0f1f4;
+  --muted-foreground: #626977;
+  --border: #e1e4ea;
+  --primary: #0054e4;
+  --primary-foreground: #ffffff;
+  --ring: var(--primary);
+  --destructive: #b42338;
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-muted: var(--muted-foreground);
+  --sidebar-border: var(--border);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [tabindex] {
+    &:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 3px;
+    }
+  }
+
+  button:not(:disabled),
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 10%, white);
+    color: color-mix(in srgb, var(--primary) 60%, black);
+  }
+}
+
+.workspace-sidebar {
+  color: var(--sidebar-foreground);
+  --sidebar-width-mobile: 18rem;
+  --background: var(--sidebar);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
