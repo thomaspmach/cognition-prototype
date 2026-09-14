@@ -32,7 +32,7 @@ The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and
 
 ## Shell and navigation
 
-`WorkspaceShell` lives in the root layout and survives client navigation. The Be UI sidebar is 264px wide, collapsible to a 68px icon rail, and becomes a modal drawer below 768px. Content has `min-width: 0`; table overflow scrolls inside its own viewport. Cards move from three columns at 1280px to two on tablets and one on phones.
+`WorkspaceShell` lives in the root layout and survives client navigation. The Be UI sidebar is 264px wide, collapsible to a 68px icon rail, and becomes an 18rem modal drawer (capped at 88vw) below 768px. The sidebar's own scope supplies its foreground and mobile width, including when portaled outside the provider. Content has `min-width: 0`; table overflow scrolls inside its own viewport. Cards move from three columns at 1280px to two on tablets and one on phones.
 
 Both navigation and catalog consume `lib/tool-registry.ts`. Active destinations have a light inset marker, tinted surface and `aria-current="page"`. Next.js links retain sidebar state when switching destinations. Icon-only links retain accessible names and hover titles.
 

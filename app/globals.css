@@ -79,6 +79,8 @@
 }
 
 .workspace-sidebar {
+  color: var(--sidebar-foreground);
+  --sidebar-width-mobile: 18rem;
   --background: var(--sidebar);
   --foreground: var(--sidebar-foreground);
   --muted: #2e3340;
