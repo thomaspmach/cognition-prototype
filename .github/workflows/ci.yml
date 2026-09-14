@@ -22,6 +22,7 @@ jobs:
           node-version-file: .nvmrc
       - run: npm install --global npm@11.11.1
       - run: npm ci
+      - run: npm rebuild better-sqlite3 --build-from-source --foreground-scripts
       - run: npm run setup:local
       - run: npm run db:migrate && npm run db:seed
       - run: npx playwright install --with-deps chromium
