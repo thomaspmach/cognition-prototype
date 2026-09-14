@@ -9,7 +9,7 @@
   --muted: #f0f1f4;
   --muted-foreground: #626977;
   --border: #e1e4ea;
-  --primary: #0457e5;
+  --primary: #0054e4;
   --primary-foreground: #ffffff;
   --ring: var(--primary);
   --destructive: #b42338;
@@ -73,8 +73,8 @@
   }
 
   ::selection {
-    background: #e6eefc;
-    color: #023489;
+    background: color-mix(in srgb, var(--primary) 10%, white);
+    color: color-mix(in srgb, var(--primary) 60%, black);
   }
 }
 

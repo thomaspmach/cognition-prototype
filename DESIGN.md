@@ -1,6 +1,6 @@
 # Workspace visual foundation
 
-This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses matching white sidebar and header surfaces with blue actions based on `#0457e5`. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
+This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses matching white sidebar and header surfaces with blue actions based on `#0054e4`. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
 
 ## Tokens
 
@@ -14,13 +14,13 @@ The implemented source of truth is `app/globals.css`. Tailwind's semantic colors
 | Quiet surface | `muted` | `#f0f1f4` |
 | Secondary text | `muted-foreground` | `#626977` |
 | Borders | `border` | `#e1e4ea` |
-| Primary action | `primary` / `primary-foreground` | `#0457e5` / `#ffffff` |
-| Focus outline | `ring` | `var(--primary)` → `#0457e5` |
+| Primary action | `primary` / `primary-foreground` | `#0054e4` / `#ffffff` |
+| Focus outline | `ring` | `var(--primary)` → `#0054e4` |
 | Destructive text | `destructive` | `#b42338` |
 | Sidebar surface / text | `sidebar` / `sidebar-foreground` | `var(--card)` / `var(--foreground)` → `#ffffff` / `#20232b` |
 | Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `var(--muted-foreground)` / `var(--border)` → `#626977` / `#e1e4ea` |
 
-The sidebar shares the header's white surface and neutral border, inheriting the workspace's text, primary and focus colors. Active and hovered navigation links use `muted: #f0f1f4` across their full height; disabled previews keep their neutral text and transparent background on hover. The selected item has no accent border or inset shadow. Text selection uses `#e6eefc` (90% white) with `#023489` text (40% black). Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
+The sidebar shares the header's white surface and neutral border, inheriting the workspace's text, primary and focus colors. Active and hovered navigation links use `muted: #f0f1f4` across their full height; disabled previews keep their neutral text and transparent background on hover. The selected item has no accent border or inset shadow. Text selection mixes `primary` with 90% white for its background and 40% black for its text using `color-mix(in srgb, …)`. Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
 
 ## Type, spacing and shape
 
