@@ -13,13 +13,15 @@ Read [AGENTS.md](../../../AGENTS.md), its required references and any supplied i
 
 Trace the named tool through the shared registry to its route, UI, tests and any server/data code. Use [architecture](../../../docs/architecture.md) to find reusable components and supported capabilities. Verify their existence and current behavior in source; a future requirement or registry access label is not an implemented capability.
 
-For example, a request to add a country filter requires checking the actual filter primitive and authorized presentation configuration. KYC implements and tests country filtering but disables it in the initial presentation. The authorized configuration contract and merge controls still await #4; do not infer configuration-only merge eligibility from the existing presentation module.
+For example, KYC supports country filtering but disables it by default. Its only pre-authorized surface is [presentation.json](../../../lib/kyc/presentation.json), validated by [presentation-schema.ts](../../../lib/kyc/presentation-schema.ts). Inspect the current value and supported UI capability before changing it. The contract allows supported filters, a permutation of all six required columns and page sizes 10/25/50.
 
 ## 2. Establish the implementation boundary
 
 Summarize the intended behavior and acceptance examples. Reuse an existing supported capability where possible. If implementation would require a new integration, permission, business rule or other material expansion, explain it and obtain confirmation before extending the request.
 
 Read the [review and merge boundary](../../../docs/security.md#review-and-merge-boundary). Locate the actual approved configuration contract and independent gate if implemented; do not invent their paths or trust a risk label. When they are absent or unverifiable, retain human review and report that eligibility for any exception has not been established.
+
+For KYC, inspect the [main-sourced policy workflow](../../../.github/workflows/kyc-policy.yml), [CODEOWNERS](../../../.github/CODEOWNERS) and actual GitHub ruleset/check state described in [activation](../../../docs/merge-controls.md). Native Code Owner review enforces outside-scope approval; classification text does not. This prototype trusts repository writers not to forge checks; never claim App-backed spoof resistance. A workflow file alone does not demonstrate activation.
 
 ## 3. Implement and verify
 

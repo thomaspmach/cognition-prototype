@@ -1,0 +1,5 @@
+{
+  "enabledFilters": ["status", "assignee"],
+  "columnOrder": ["id", "customerName", "country", "status", "assigneeName", "submittedAt"],
+  "pageSize": 25
+}

@@ -1,5 +1,5 @@
-export type FilterId = "status" | "assignee" | "country";
+import config from "./presentation.json" with { type: "json" };
+import { validatePresentation } from "./presentation-schema.ts";
 
-export const queuePresentation: { enabledFilters: readonly FilterId[] } = {
-  enabledFilters: ["status", "assignee"],
-};
+export type { FilterId } from "./presentation-schema.ts";
+export const queuePresentation = validatePresentation(config);

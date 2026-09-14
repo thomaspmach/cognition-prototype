@@ -14,7 +14,8 @@ This document is guidance, not an enforcement mechanism. It links implemented co
 | Identity and authorization | [Better Auth](../lib/server/auth.ts), [server access](../lib/server/access.ts), [page access](../lib/server/page-access.ts) | Library-managed password hashing and database sessions; persisted roles checked on reads/writes; signup disabled |
 | Strict input and origin checks | [Zod schemas](../lib/kyc/model.ts), [mutation handler](../app/api/kyc/cases/[id]/route.ts) | Rejects unknown identity/rule fields, invalid values and cross-origin writes |
 | Cases and events | [KYC service](../lib/server/kyc.ts), [schema](../lib/server/schema.ts), [server tests](../tests/server/kyc.test.ts), [HTTP tests](../tests/e2e/access.spec.ts) | Immediate transaction and expected version; state/event atomicity and conflicts tested; application history is not tamper-proof |
-| Presentation configuration and conditional merge review | [Issue #4](https://github.com/thomaspmach/cognition-prototype/issues/4) | Pending independent enforcement; no gate/schema/workflow implementation in this foundation |
+| Presentation configuration | [JSON](../lib/kyc/presentation.json), [schema](../lib/kyc/presentation-schema.ts), [contract tests](../tests/kyc-presentation.test.ts) | Strict declarative filters, column ordering and page size; required identity/status/action columns cannot be removed |
+| Conditional merge review | [Base-policy evaluator](../scripts/check-kyc-presentation.ts), [policy workflow](../.github/workflows/kyc-policy.yml), [CI](../.github/workflows/ci.yml), [CODEOWNERS](../.github/CODEOWNERS) | Requires owner activation and live verification; trusts repository writers not to forge checks; **not spoof-resistant App-backed enforcement** |
 
 Do not infer remote GitHub protection settings from repository documentation. When enforcing or describing a merge restriction, inspect the actual checks, trusted policy and repository settings. Link that executable evidence when #4 is implemented.
 
@@ -38,9 +39,9 @@ Use Devin's secret storage or local environment variables for actual credentials
 
 ## Review and merge boundary
 
-**Current procedure:** deliver a PR and wait for human Engineering review. There is no implemented pre-authorized presentation surface or configuration-only merge mechanism yet. New tools, instructions and code changes require review as a project rule; this text does not itself make GitHub block a merge.
+**Until activation is verified:** deliver a PR and wait for human Engineering review. Repository files do not activate GitHub protections. See the separate [owner settings, activation sequence and verification matrix](merge-controls.md).
 
-**Required behavior when #4 supplies independent controls:**
+**After activation, under the prototype's trusted-writer assumption:**
 
 - Eligibility must be determined from the complete PR change, including additions, deletions, renames and mixed changes. Only valid changes entirely within the explicitly approved presentation surface can qualify for the no-human-review path.
 - Application/shared code, registry/access requirements, dependencies, migrations, permissions, business rules, instructions, CI and policy changes require authorized human review. Tool roles such as KYC Reviewer do not grant code-review permission.
@@ -48,6 +49,12 @@ Use Devin's secret storage or local environment variables for actual credentials
 - The PR must not alter its own trusted eligibility policy to authorize itself. Do not run untrusted PR code with privileged credentials to decide eligibility. The author cannot approve their own PR; the Devin actor must not bypass protections.
 - If controls are absent, failing, unverifiable or cannot establish eligibility, report the blocker and seek the required review. Do not weaken controls or claim a configuration-only exception.
 
-Once implemented, replace pending descriptions with links to the actual schema, validator, trusted workflows, required checks, reviewer ownership and actor/auto-merge configuration. Follow that verified mechanism only when the user's task authorizes merging. These repository skills end at PR delivery; they never authorize their own merge.
+Native required Code Owner review enforces the outside-scope approval requirement using ownership from the base branch. `ci/quality` and `kyc/presentation-policy` are separate required checks. Policy success for a valid outside-scope change does not supply its missing approval. Neither labels nor the evaluator's explanatory classification authorizes a merge.
 
-The [change skill](../.agents/skills/change-internal-tool/SKILL.md) follows this boundary. Functional merge-path validation belongs to [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5). Repository approval is separate from business/compliance approval, and merging is separate from production deployment.
+The evaluator runs main-sourced code and validates raw candidate JSON and complete Git metadata as data. It does not install candidate dependencies, check out candidate code, or execute candidate scripts/actions/artifacts with its Checks-write token. Proposed schema or policy changes are reviewed using the policy already on main.
+
+**Trust limitation:** repository writers and maintainers are trusted not to forge check results or deliberately bypass controls. Another workflow on an unmerged branch can request write permissions and publish a matching check under the same GitHub Actions identity. Read-only token defaults and named required checks do not authenticate the originating workflow. This can defeat validation/CI checks; it does not itself supply native Code Owner approval. This prototype does not provide the spoof resistance of an isolated App-bound gate. That hardening would require separate approval and infrastructure; no dedicated App or extra privileged credential is used here.
+
+Follow the verified mechanism only when the user's task authorizes merging. These repository skills end at PR delivery; they never authorize their own merge. [Activation](merge-controls.md) covers reviewer identities, required-check sources and explicit entry into auto-merge.
+
+The [change skill](../.agents/skills/change-internal-tool/SKILL.md) follows this boundary. Live protection probes are part of activating #4; fresh-session skill workflow validation belongs to [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5), and final integrated verification belongs to #6. Repository approval is separate from business/compliance approval, and merging is separate from production deployment.
