@@ -16,6 +16,9 @@ nvm install
 nvm use
 npm install --global npm@11.11.1
 npm ci
+npm run setup:local
+npm run db:migrate
+npm run db:seed
 npx playwright install chromium
 ```
 
@@ -29,15 +32,18 @@ npm run test:e2e
 
 `check` runs lint, typecheck and Vitest. Typecheck generates Next route types before running TypeScript. Playwright uses the production build and manages its own server on port **3100**, which must be free. Run checks after the final change; report failures and unverified criteria accurately.
 
-For local use, run `npm run dev`, or `npm run build` followed by `npm run start`; both servers default to port **3000**. Do not run dev and build in the same checkout simultaneously. Confirm listener ownership before stopping a server. [README](README.md#run-locally) has setup details, browser library prerequisites and the full command table. Current setup requires no credentials, environment variables, database, migration or seed.
+For local use, run `npm run dev`, or `npm run build` followed by `npm run start`; both servers default to port **3000**. Do not run dev and build in the same checkout simultaneously. Confirm listener ownership before stopping a server. [README](README.md#run-locally) has setup details, synthetic sign-in accounts and the full command table. `setup:local` creates an ignored `.env` with a generated session secret; migrate and seed before startup. Seed reruns preserve existing work. Playwright uses its own fresh database and seeded sessions.
 
 ## Module map
 
 | Location | Responsibility |
 | --- | --- |
 | `app/` | Routes, root layout and design tokens |
-| `app/tools/kyc/page.tsx` | Existing tool route; UI foundation only |
-| `components/workspace/` | Persistent shell, catalog, tool icons and KYC composition |
+| `app/(workspace)/` | Authenticated shell, Overview and functional KYC page |
+| `app/api/` | Better Auth and protected case reads/mutations |
+| `components/workspace/` | Persistent shell, catalog and tool icons |
+| `components/kyc/`, `lib/kyc/` | KYC composition, typed model/validation and initial presentation |
+| `lib/server/`, `drizzle/`, `scripts/` | Server auth/data, schema/migrations and local setup |
 | `components/shared/` | Reusable queue, detail, heading, status and feedback compositions |
 | `components/motion/` | Installed Be UI source; preserve attribution and avoid casual vendor edits |
 | `lib/tool-registry.ts` | Typed metadata shared by catalog and sidebar |

@@ -66,7 +66,7 @@ export function ToolCatalog() {
                   <dd className="font-medium">{tool.responsibleTeam}</dd>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <dt className="text-muted-foreground">Planned access</dt>
+                  <dt className="text-muted-foreground">{tool.route ? "Access" : "Planned access"}</dt>
                   <dd className="capitalize">{tool.accessRequirements.join(", ")}</dd>
                 </div>
               </dl>
@@ -75,10 +75,10 @@ export function ToolCatalog() {
               {tool.route ? (
                 <Link
                   href={tool.route}
-                  aria-label={`Open ${tool.name} foundation`}
+                  aria-label={`Open ${tool.name}`}
                   className="flex min-h-8 items-center justify-between gap-2 rounded-md text-sm font-medium text-primary hover:underline"
                 >
-                  Open foundation <ArrowRight aria-hidden="true" className="size-4" />
+                  Open tool <ArrowRight aria-hidden="true" className="size-4" />
                 </Link>
               ) : (
                 <p className="flex min-h-8 items-center text-xs leading-5 text-muted-foreground">

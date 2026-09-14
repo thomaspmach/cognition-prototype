@@ -16,6 +16,7 @@ import {
   useAnimatedSidebar,
 } from "@/components/motion/animated-sidebar";
 import { ToolIcon } from "@/components/workspace/tool-icon";
+import { AccountMenu } from "@/components/workspace/account-menu";
 import { availabilityLabels, toolRegistry } from "@/lib/tool-registry";
 import { cn } from "@/lib/utils";
 
@@ -130,7 +131,7 @@ function SidebarNavigation() {
         <div className="flex items-center gap-3 px-2">
           <Circle aria-hidden="true" className="size-3 shrink-0 text-ring" />
           <div className="group-data-[state=collapsed]/sidebar:hidden">
-            <p className="text-xs font-medium text-sidebar-foreground">Foundation build</p>
+            <p className="text-xs font-medium text-sidebar-foreground">Synthetic workspace</p>
             <p className="text-[11px] text-sidebar-muted">Internal tools · Prototype</p>
           </div>
         </div>
@@ -139,7 +140,10 @@ function SidebarNavigation() {
   );
 }
 
-export function WorkspaceShell({ children }: { children: ReactNode }) {
+export function WorkspaceShell({ children, actor }: {
+  children: ReactNode;
+  actor: { name: string; role: string };
+}) {
   const pathname = usePathname();
   const currentTool = toolRegistry.find((tool) => tool.route === pathname);
   const pageName = pathname === "/" ? "Overview" : currentTool?.name ?? "Page not found";
@@ -165,9 +169,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             <span aria-hidden="true" className="text-border">/</span>
             <span className="truncate text-sm font-medium">{pageName}</span>
           </div>
-          <span className="shrink-0 rounded-md border px-2 py-1 text-[11px] text-muted-foreground">
-            Local prototype
-          </span>
+          <AccountMenu actor={actor} />
         </header>
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1440px] min-w-0 p-5 sm:p-8 lg:p-10">
           {children}

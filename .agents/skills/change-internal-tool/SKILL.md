@@ -13,7 +13,7 @@ Read [AGENTS.md](../../../AGENTS.md), its required references and any supplied i
 
 Trace the named tool through the shared registry to its route, UI, tests and any server/data code. Use [architecture](../../../docs/architecture.md) to find reusable components and supported capabilities. Verify their existence and current behavior in source; a future requirement or registry access label is not an implemented capability.
 
-For example, a request to add a country filter requires checking the actual filter primitive and authorized presentation configuration. If either is absent, report the missing dependency and the scope needed; do not call a new capability “configuration-only.” In the initial foundation, those KYC capabilities and controls await #3/#4.
+For example, a request to add a country filter requires checking the actual filter primitive and authorized presentation configuration. KYC implements and tests country filtering but disables it in the initial presentation. The authorized configuration contract and merge controls still await #4; do not infer configuration-only merge eligibility from the existing presentation module.
 
 ## 2. Establish the implementation boundary
 

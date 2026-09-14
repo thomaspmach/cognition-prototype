@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { WorkspaceShell } from "@/components/workspace/workspace-shell";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,7 +11,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <WorkspaceShell>{children}</WorkspaceShell>
+        {children}
       </body>
     </html>
   );

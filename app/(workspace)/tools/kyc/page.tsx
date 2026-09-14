@@ -1,24 +1,22 @@
 import type { Metadata } from "next";
-import { Feedback } from "@/components/shared/feedback";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { KycFoundation } from "@/components/workspace/kyc-foundation";
+import { KycQueue } from "@/components/kyc/kyc-queue";
+import { requirePageActor } from "@/lib/server/page-access";
 import { toolRegistry } from "@/lib/tool-registry";
 
 const tool = toolRegistry.find((entry) => entry.id === "kyc")!;
 
 export const metadata: Metadata = { title: tool.name };
 
-export default function KycPage() {
+export default async function KycPage() {
+  const actor = await requirePageActor();
   return (
     <>
       <PageHeader eyebrow={tool.responsibleTeam} title={tool.name} description={tool.description}>
-        <StatusBadge status="info">UI foundation</StatusBadge>
+        <StatusBadge status="neutral">{actor.role === "reviewer" ? "Reviewer" : "Viewer · Read-only"}</StatusBadge>
       </PageHeader>
-      <Feedback>
-        <strong className="font-medium">Foundation only.</strong> This destination validates the shared workspace. The functional KYC workflow will arrive in issue #3.
-      </Feedback>
-      <KycFoundation />
+      <KycQueue role={actor.role} />
     </>
   );
 }

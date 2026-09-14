@@ -28,7 +28,7 @@ For a new tool, obtain explicit confirmation before implementation; resolve bloc
 
 ## Interaction states
 
-Use the [shared components](architecture.md#shared-ui-to-reuse) where their contracts fit. These expectations apply to functionality as it is implemented; the current KYC foundation does not exercise a real request lifecycle.
+Use the [shared components](architecture.md#shared-ui-to-reuse) where their contracts fit. KYC exercises these states against authenticated server requests and persistent case/history data.
 
 | State | Expected behavior |
 | --- | --- |

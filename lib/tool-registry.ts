@@ -19,10 +19,10 @@ export const toolRegistry = [
   {
     id: "kyc",
     name: "KYC Case Review",
-    description: "A shared workspace for customer verification and case review.",
+    description: "Review onboarding cases, assign reviewers and record decisions.",
     responsibleTeam: "Compliance",
     accessRequirements: ["viewer", "reviewer"],
-    availability: "foundation",
+    availability: "available",
     route: "/tools/kyc",
   },
   {

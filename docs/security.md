@@ -2,7 +2,7 @@
 
 ## Control inventory
 
-This document is guidance, not an enforcement mechanism. It describes the current UI foundation and requirements for later work.
+This document is guidance, not an enforcement mechanism. It links implemented controls and distinguishes requirements for later work.
 
 | Area | Current evidence | Classification / limitation |
 | --- | --- | --- |
@@ -11,14 +11,16 @@ This document is guidance, not an enforcement mechanism. It describes the curren
 | Shared feedback and panels | [Shared UI](architecture.md#shared-ui-to-reuse) | Presentation/accessibility implementation, not input validation or permission enforcement |
 | Secret/local-state exclusions | [.gitignore](../.gitignore) | Git ignores common secret, database and generated paths; this does not scan content or prevent force-adding files |
 | Lint/typecheck/test/build | [package.json](../package.json), [ESLint](../eslint.config.mjs), [Vitest](../vitest.config.ts), [Playwright](../playwright.config.ts) | Executable local checks; their existence does not establish required GitHub checks or branch protection |
-| Identity, authorization, data and events | [Issue #3](https://github.com/thomaspmach/cognition-prototype/issues/3) | Required for functional KYC; no current implementation |
+| Identity and authorization | [Better Auth](../lib/server/auth.ts), [server access](../lib/server/access.ts), [page access](../lib/server/page-access.ts) | Library-managed password hashing and database sessions; persisted roles checked on reads/writes; signup disabled |
+| Strict input and origin checks | [Zod schemas](../lib/kyc/model.ts), [mutation handler](../app/api/kyc/cases/[id]/route.ts) | Rejects unknown identity/rule fields, invalid values and cross-origin writes |
+| Cases and events | [KYC service](../lib/server/kyc.ts), [schema](../lib/server/schema.ts), [server tests](../tests/server/kyc.test.ts), [HTTP tests](../tests/e2e/access.spec.ts) | Immediate transaction and expected version; state/event atomicity and conflicts tested; application history is not tamper-proof |
 | Presentation configuration and conditional merge review | [Issue #4](https://github.com/thomaspmach/cognition-prototype/issues/4) | Pending independent enforcement; no gate/schema/workflow implementation in this foundation |
 
 Do not infer remote GitHub protection settings from repository documentation. When enforcing or describing a merge restriction, inspect the actual checks, trusted policy and repository settings. Link that executable evidence when #4 is implemented.
 
 ## Server and data requirements for functional tools
 
-These are requirements to implement and test before shipping protected functionality. The current foundation has no reusable auth, persistence or event-recording helpers to invoke. Follow [architecture's integration steps](architecture.md#future-serverdata-integration) and the requested tool's specification.
+These are requirements for protected functionality. KYC implements them using the modules above. Follow [architecture's integration steps](architecture.md#server-and-data-integration) and the requested tool's specification.
 
 - Use a maintained authentication library with server-verifiable sessions. Derive the actor and permissions on the server; ignore client-supplied actor/role claims. Do not implement custom authentication cryptography.
 - Enforce authorization on route reads, server actions/handlers and data access. Validate permission and allowed record/state scope for every operation. Hiding a link or button is only presentation.
@@ -30,7 +32,7 @@ Tool-specific roles, transitions and reason requirements belong to that tool's i
 
 ## Secrets and data
 
-Current local setup needs no secrets or database. Use only synthetic data when data-backed functionality is added. Keep real credentials, session secrets, personal data and local database files out of code, logs, screenshots, fixtures and PRs.
+Local setup generates a session secret in ignored `.env` and stores synthetic records in `.data/workspace.sqlite`. [README](../README.md#synthetic-sign-in-accounts) lists public local-only demonstration credentials. Never reuse them for real data. Keep real credentials, session secrets, personal data and local database files out of code, logs, screenshots, fixtures and PRs.
 
 Use Devin's secret storage or local environment variables for actual credentials, with placeholder-only examples in version control. Inspect staged content as well as ignore rules. Never rely on `.gitignore` to remove previously tracked secrets. Document future local seed credentials only when they are explicitly safe demonstration accounts; do not reuse operational credentials.
 
