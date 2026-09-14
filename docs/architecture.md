@@ -62,7 +62,9 @@ KYC's boundaries:
 
 Assignment is nonexclusive operational ownership: any authorized Reviewer can act on any nonterminal case. [README roles/transitions](../README.md#kyc-roles-and-transitions) describes the complete rules. All data is synthetic; history is not a tamper-proof audit system.
 
-`lib/kyc/presentation.ts` initially enables only status and assignee filters. Country remains visible and its reusable filter capability is tested. [Issue #4](https://github.com/thomaspmach/cognition-prototype/issues/4) will define the bounded configuration contract and independent merge gate; neither exists yet. See [security](security.md#review-and-merge-boundary).
+`lib/kyc/presentation.json` is the only pre-authorized presentation surface. `presentation.ts` validates the imported value through `presentation-schema.ts`; the trusted merge evaluator also validates raw JSON, byte size and Git mode. Defaults enable status/assignee filters and leave country filtering disabled. Configuration may choose unique supported filters, reorder all six required columns, and select page sizes 10/25/50. The KYC composition retains its fixed column renderers and pages the authorized returned records; configuration cannot change server authorization, fetching rules or decisions.
+
+`scripts/check-kyc-presentation.ts` uses only Node built-ins and the dependency-free schema, so the privileged policy job installs no repository dependencies. TypeScript extension imports are enabled for Node's native type stripping. Its complete-diff classification is explanatory; native required Code Owner review enforces the outside-scope boundary. GitHub enforcement still requires owner activation and trusts writers not to spoof checks. See [security](security.md#review-and-merge-boundary) and [activation](merge-controls.md).
 
 ## Verification boundary
 

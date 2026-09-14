@@ -3,12 +3,21 @@ import { describe, expect, it, vi } from "vitest";
 import { emptyFilters, QueueFilters } from "@/components/kyc/queue-filters";
 import { queuePresentation } from "@/lib/kyc/presentation";
 
-describe("country filter presentation", () => {
-  it("keeps country filtering disabled in the initial presentation", () => {
+describe("configured filters", () => {
+  it("renders exactly the configured filters and always retains search", () => {
     render(<QueueFilters values={emptyFilters} onChange={vi.fn()} reviewers={[]} countries={["GB"]} />);
-    expect(queuePresentation.enabledFilters).toEqual(["status", "assignee"]);
-    expect(screen.queryByRole("combobox", { name: "Country" })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
+    expect(screen.getByRole("textbox", { name: "Search customers" })).toBeVisible();
+    expect(screen.queryAllByRole("combobox")).toHaveLength(queuePresentation.enabledFilters.length);
+    for (const filter of ["status", "assignee", "country"] as const) {
+      expect(Boolean(screen.queryByRole("combobox", { name: new RegExp(`^${filter}$`, "i") })))
+        .toBe(queuePresentation.enabledFilters.includes(filter));
+    }
+  });
+
+  it("keeps search available when all optional filters are disabled", () => {
+    render(<QueueFilters values={emptyFilters} onChange={vi.fn()} reviewers={[]} countries={[]} enabledFilters={[]} />);
+    expect(screen.getByRole("textbox", { name: "Search customers" })).toBeVisible();
+    expect(screen.queryAllByRole("combobox")).toHaveLength(0);
   });
 
   it("supports enabling and selecting country using the reusable filter component", () => {

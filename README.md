@@ -92,7 +92,7 @@ The browser suite creates a separate, freshly migrated and seeded SQLite databas
 ## What works
 
 - **Overview (`/`):** catalog driven by one typed registry; searchable by name, description or responsible team.
-- **KYC Case Review (`/tools/kyc`):** customer search, status/assignee filters, case details, assignment/reassignment, decisions and chronological history. Country is visible in the queue and details; the reusable country filter is tested but disabled in the initial `lib/kyc/presentation.ts` configuration.
+- **KYC Case Review (`/tools/kyc`):** customer search, configured filters, paginated cases, case details, assignment/reassignment, decisions and chronological history. Country is visible in the queue and details; its supported filter is disabled by default in `lib/kyc/presentation.json`. The strict configuration also controls column order and page size (10/25/50), preserving every identity/status/action column.
 - **Refunds Dashboard and Feature Flag Admin:** visible **Preview only** entries with disabled navigation, no links and no pages.
 
 Workspace pages and data endpoints require a server-verifiable session. Registry access metadata describes roles; the server helpers enforce them.
@@ -114,7 +114,7 @@ Workspace pages and data endpoints require a server-verifiable session. Registry
 
 Rejection requires a nonblank reason; approval and escalation accept an optional reason. Risk scores are informational and never trigger decisions. Every successful write stores the authenticated actor, UTC timestamp and old/new state in history, atomically with the case. An expected version rejects stale or repeated writes; reload details after a conflict. History is an application event log, not a tamper-proof audit system.
 
-Document verification, sanctions/risk automation, bulk actions, signup/recovery, enterprise SSO and user administration are outside scope. Bounded presentation configuration and independently enforced merge controls belong to #4; its contract/gate and the broader #5–#6 workflows are not implemented here.
+Document verification, sanctions/risk automation, bulk actions, signup/recovery, enterprise SSO and user administration are outside scope. The #4 presentation contract, policy evaluator, CI and CODEOWNERS are implemented in repository files. **Live merge enforcement requires separate owner activation and verification**; see [exact settings and activation](docs/merge-controls.md). This prototype trusts writers not to forge checks and is not equivalent to spoof-resistant App-backed enforcement. The broader #5–#6 workflows remain separate work.
 
 Next's automatic agent-instruction generation is disabled (`agentRules: false`); the project maintains its own [AGENTS.md](AGENTS.md).
 
@@ -129,7 +129,7 @@ Use the two repository skills for separate tasks:
 
 In Devin Cloud, include `@skills:build-internal-tool` or `@skills:change-internal-tool` with the business request. No source paths or technical PRD are required from the requester. [Cloud Skills documentation](https://docs.devin.ai/product-guides/skills) describes discovery, invocation and supported format. Each skill lives under `.agents/skills/<skill-name>/SKILL.md` with YAML `name` and `description`; choose one rather than assuming simultaneous active skills.
 
-These are reusable procedures, not runtime or merge enforcement. New tools and changes currently need human Engineering review. KYC application checks are distinct from the fresh-session Cloud workflow validation tracked in [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5). Refine instructions against #4 when its controls arrive.
+These are reusable procedures, not runtime or merge enforcement. Until #4 activation is verified, retain human Engineering review. Afterwards, valid JSON-only presentation changes may satisfy merge requirements without that approval; all other changes require an authorized Code Owner. Every path requires both configured checks. KYC application checks are distinct from the fresh-session Cloud workflow validation tracked in [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5).
 
 ## Project map
 
