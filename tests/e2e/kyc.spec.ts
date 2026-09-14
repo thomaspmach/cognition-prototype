@@ -1,5 +1,18 @@
 import { expect, test } from "@playwright/test";
 
+for (const query of ["", "?case", "?case="]) {
+  test(`missing or empty case parameter keeps the queue usable: ${query || "(absent)"}`, async ({ page }) => {
+    await page.goto(`/tools/kyc${query}`);
+    await expect(page.getByText("12 cases shown", { exact: true })).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page.getByRole("button", { name: "Open KYC-0002" }).click();
+    const panel = page.getByRole("dialog", { name: "KYC-0002" });
+    await expect(panel.getByText("customer2@example.test", { exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(panel).toHaveCount(0);
+  });
+}
+
 test.describe("Reviewer workflow", () => {
   test.use({ storageState: ".data/e2e/alex.json" });
 

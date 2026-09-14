@@ -83,7 +83,7 @@ export function KycQueue({ role }: { role: "viewer" | "reviewer" }) {
           } />
       )}
       <p className="mt-4 text-xs leading-5 text-muted-foreground">Select a case to view its details and chronological history. Risk scores never make decisions.</p>
-      <DetailPanel open={selectedId !== null} onOpenChange={(open) => {
+      <DetailPanel open={Boolean(selectedId)} onOpenChange={(open) => {
         if (!open) router.replace("/tools/kyc", { scroll: false });
       }} title={selectedId || "Case details"} description="Onboarding review · Synthetic case">
         {selectedId && <CaseDetail key={selectedId} id={selectedId} reviewers={data.reviewers} role={role}
