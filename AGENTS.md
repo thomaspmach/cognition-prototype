@@ -16,13 +16,16 @@ nvm install
 nvm use
 npm install --global npm@11.11.1
 npm ci
+npm rebuild better-sqlite3 --build-from-source --foreground-scripts
 npm run setup:local
 npm run db:migrate
 npm run db:seed
 npx playwright install chromium
 ```
 
-The pins are Node **24.19.0** in [.nvmrc](.nvmrc) and npm **11.11.1** in [package.json](package.json). Keep the committed lockfile and package manager. If setup fails, inspect the checkout, working directory and logs before changing anything; do not change pins or skip checks to hide an environment failure.
+The pins are Node **24.18.1** in [.nvmrc](.nvmrc) and npm **11.11.1** in [package.json](package.json). Keep the committed lockfile and package manager. If setup fails, inspect the checkout, working directory and logs before changing anything; do not change pins or skip checks to hide an environment failure.
+
+Node 24.18.1 is a temporary pin for the upstream [native-addon cleanup regression](https://github.com/nodejs/node/issues/65446). After selecting it, run both the clean install and source rebuild above: switching Node alone can retain an incompatible `better-sqlite3` binary, and `npm ci` can obtain a cached or downloaded prebuild. The rebuild bypasses prebuilds and compiles against the selected Node headers. It requires Python 3, make and a C++ compiler (on Ubuntu: `python3 make g++`). Revisit the pin when Node 24 includes the [complete upstream fix](https://github.com/nodejs/node/pull/65943).
 
 ```sh
 npm run check

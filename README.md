@@ -6,13 +6,14 @@ The shell from [#1](https://github.com/thomaspmach/cognition-prototype/issues/1)
 
 ## Run locally
 
-Use Node **24.19.0** (`.nvmrc`) and npm **11.11.1** (`packageManager` in `package.json`). With an existing NVM installation:
+Use Node **24.18.1** (`.nvmrc`) and npm **11.11.1** (`packageManager` in `package.json`). With an existing NVM installation:
 
 ```sh
 nvm install
 nvm use
 npm install --global npm@11.11.1
 npm ci
+npm rebuild better-sqlite3 --build-from-source --foreground-scripts
 npm run setup:local
 npm run db:migrate
 npm run db:seed
@@ -22,6 +23,8 @@ npm run dev
 Open http://localhost:3000. `setup:local` generates a random session secret into ignored `.env` only when that file does not exist. It preserves existing settings. `.env.example` documents `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` and `SQLITE_PATH`; the default database is `.data/workspace.sqlite`. Run migrations before seeding or starting the application. When changing the host or port, set `BETTER_AUTH_URL` to that exact origin.
 
 The font is bundled locally. `npm ci` uses the committed lockfile; do not mix package managers. npm 11 is pinned because npm 10's dependency resolver crashes on this test dependency tree.
+
+Node 24.18.1 is temporarily pinned to avoid the [native-addon cleanup regression](https://github.com/nodejs/node/issues/65446), pending the [complete upstream fix](https://github.com/nodejs/node/pull/65943). Run the source rebuild after every clean install or Node switch: it replaces cached or downloaded `better-sqlite3` prebuilds with a binary compiled against the selected Node headers. Changing the runtime alone is insufficient. The rebuild requires Python 3, make and a C++ compiler (on Ubuntu: `python3 make g++`); CI performs the same rebuild.
 
 ### Synthetic sign-in accounts
 
