@@ -15,9 +15,9 @@ This document is guidance, not an enforcement mechanism. It links implemented co
 | Strict input and origin checks | [Zod schemas](../lib/kyc/model.ts), [mutation handler](../app/api/kyc/cases/[id]/route.ts) | Rejects unknown identity/rule fields, invalid values and cross-origin writes |
 | Cases and events | [KYC service](../lib/server/kyc.ts), [schema](../lib/server/schema.ts), [server tests](../tests/server/kyc.test.ts), [HTTP tests](../tests/e2e/access.spec.ts) | Immediate transaction and expected version; state/event atomicity and conflicts tested; application history is not tamper-proof |
 | Presentation configuration | [JSON](../lib/kyc/presentation.json), [schema](../lib/kyc/presentation-schema.ts), [contract tests](../tests/kyc-presentation.test.ts) | Strict declarative filters, column ordering and page size; required identity/status/action columns cannot be removed |
-| Conditional merge review | [Base-policy evaluator](../scripts/check-kyc-presentation.ts), [policy workflow](../.github/workflows/kyc-policy.yml), [CI](../.github/workflows/ci.yml), [CODEOWNERS](../.github/CODEOWNERS) | Requires owner activation and live verification; trusts repository writers not to forge checks; **not spoof-resistant App-backed enforcement** |
+| Conditional merge review | [Base-policy evaluator](../scripts/check-kyc-presentation.ts), [policy workflow](../.github/workflows/kyc-policy.yml), [CI](../.github/workflows/ci.yml), [CODEOWNERS](../.github/CODEOWNERS) | Owner-applied controls with [limited live evidence](merge-controls.md); trusts repository writers not to forge checks; **not spoof-resistant App-backed enforcement** |
 
-Do not infer remote GitHub protection settings from repository documentation. When enforcing or describing a merge restriction, inspect the actual checks, trusted policy and repository settings. Link that executable evidence when #4 is implemented.
+Do not infer remote GitHub protection settings from repository documentation. When enforcing or describing a merge restriction, inspect the actual checks, trusted policy and repository settings. Separate current read-back from the historical evidence linked in [merge controls](merge-controls.md).
 
 ## Server and data requirements for functional tools
 
@@ -39,7 +39,7 @@ Use Devin's secret storage or local environment variables for actual credentials
 
 ## Review and merge boundary
 
-**Until activation is verified:** deliver a PR and wait for human Engineering review. Repository files do not activate GitHub protections. See the separate [owner settings, activation sequence and verification matrix](merge-controls.md).
+**Observed activation and limits:** owner-applied protections and two live paths are documented in [merge controls](merge-controls.md). The full #4 verification matrix and automatic merge completion remain unverified. Repository files alone do not activate protections; if the effective settings or checks cannot be verified for a proposed merge, retain human review and report the gap.
 
 **After activation, under the prototype's trusted-writer assumption:**
 

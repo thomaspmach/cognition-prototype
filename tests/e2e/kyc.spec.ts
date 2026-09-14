@@ -92,6 +92,48 @@ test("Viewer uses configured filters and reads; country remains visible", async 
   await page.screenshot({ path: ".data/e2e/detail.png", fullPage: true });
 });
 
+test("country selection composes with other filters and can be cleared and reapplied", async ({ page }) => {
+  test.skip(!queuePresentation.enabledFilters.includes("country"), "Country filter is not configured.");
+  const expectCases = async (ids: string[]) => {
+    await expect(page.getByRole("button", { name: /^Open KYC-/ })).toHaveCount(ids.length);
+    for (const id of ids) {
+      await expect(page.getByRole("button", { name: `Open ${id}`, exact: true })).toBeVisible();
+    }
+  };
+  await page.goto("/tools/kyc");
+  const country = page.getByRole("combobox", { name: "Country", exact: true });
+  await country.selectOption("GB");
+  await expectCases(["KYC-0001", "KYC-0006"]);
+  await country.selectOption("US");
+  await expectCases(["KYC-0002", "KYC-0008"]);
+  if (queuePresentation.enabledFilters.includes("status")) {
+    await page.getByRole("combobox", { name: "Status", exact: true }).selectOption("pending");
+    await expectCases(["KYC-0002", "KYC-0008"]);
+  }
+  if (queuePresentation.enabledFilters.includes("assignee")) {
+    await page.getByRole("combobox", { name: "Assignee", exact: true }).selectOption("reviewer-sam");
+    await expect(page.getByRole("heading", { name: "No matching cases" })).toBeVisible();
+    await expectCases([]);
+    await page.getByRole("combobox", { name: "Assignee", exact: true }).selectOption("reviewer-alex");
+    await expectCases(["KYC-0002", "KYC-0008"]);
+  }
+  await page.getByRole("textbox", { name: "Search customers" }).fill("Drew");
+  await expectCases(["KYC-0008"]);
+  await country.selectOption("GB");
+  await expect(page.getByRole("heading", { name: "No matching cases" })).toBeVisible();
+  await expectCases([]);
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.getByText("12 matching cases", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Open KYC-/ })).toHaveCount(Math.min(12, queuePresentation.pageSize));
+  await expect(country).toHaveValue("");
+  await country.selectOption("US");
+  await expectCases(["KYC-0002", "KYC-0008"]);
+  await page.reload();
+  await expect(country).toHaveValue("");
+  await country.selectOption("US");
+  await expectCases(["KYC-0002", "KYC-0008"]);
+});
+
 test("configured page size reaches the last record and preserves case navigation", async ({ page }) => {
   await page.route("**/api/kyc/cases?*", async (route) => {
     const response = await route.fetch();
