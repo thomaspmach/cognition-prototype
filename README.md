@@ -60,6 +60,8 @@ The browser suite covers route changes, persistent sidebar state, disabled previ
 
 The registry's access requirements describe planned roles. They do not restrict access. Authentication, persisted cases, filters, assignment and decisions belong to issue #3. Engineering standards/skills, configuration controls and later epic work are not implemented here.
 
+Next's automatic agent-instruction generation is disabled (`agentRules: false`); repository instructions are reserved for issue #2.
+
 ## Project map
 
 ```text

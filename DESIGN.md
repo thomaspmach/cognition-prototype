@@ -20,7 +20,7 @@ The implemented source of truth is `app/globals.css`. Tailwind's semantic colors
 | Sidebar surface / text | `sidebar` / `sidebar-foreground` | `#20232b` / `#f4f5f8` |
 | Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `#afb5c3` / `#373c48` |
 
-The sidebar scopes Be UI's surface tokens to graphite; its active inset marker and focus ring use `#a5a8ff`. Use semantic tokens for core surfaces. Status messages use restrained Tailwind indigo, emerald and rose backgrounds with dark text. Always pair status color with words.
+The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and `primary: #c7c9ff`; its active inset marker and focus ring use `#a5a8ff`. Use semantic tokens for core surfaces. Status messages use restrained Tailwind indigo, emerald and rose backgrounds with dark text. Always pair status color with words.
 
 ## Type, spacing and shape
 
