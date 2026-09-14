@@ -34,7 +34,7 @@ The sidebar shares the header's white surface and neutral border, inheriting the
 
 `WorkspaceShell` lives in the root layout and survives client navigation. The sidebar brand reads **company / tools**. The Be UI sidebar is 264px wide, collapsible to a 68px icon rail, and becomes an 18rem modal drawer (capped at 88vw) below 768px. The sidebar's own scope supplies its white background, foreground and mobile width, including when portaled outside the provider. Content has `min-width: 0`; table overflow scrolls inside its own viewport. Cards move from three columns at 1280px to two on tablets and one on phones.
 
-Navigation content has 60px top padding below the brand. Section labels use their natural 16px line height with a 4px bottom gap. The footer's two text lines have no extra margin between them. Semantic lists compose Be UI sidebar items with Next.js links and disabled preview buttons; hover backgrounds belong to each control and follow its content height.
+Navigation content has 36px top padding below the brand. Section labels use their natural 16px line height with a 4px bottom gap. The footer's two text lines have no extra margin between them. Semantic lists compose Be UI sidebar items with Next.js links and disabled preview buttons; hover backgrounds belong to each control and follow its content height.
 
 Both navigation and catalog consume `lib/tool-registry.ts`. Active destinations have a neutral gray surface, dark text and `aria-current="page"`. Keyboard focus retains its blue outline independently of selection. Next.js links retain sidebar state when switching destinations. Icon-only links retain accessible names and hover titles.
 

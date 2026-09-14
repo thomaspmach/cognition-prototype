@@ -53,7 +53,7 @@ function SidebarNavigation() {
           company<span className="ml-1 font-normal text-sidebar-muted">/ tools</span>
         </span>
       </div>
-      <AnimatedSidebarContent className="px-3 pt-15">
+      <AnimatedSidebarContent className="px-3 pt-9">
         <nav aria-label="Tools">
           <AnimatedSidebarGroup className="p-0">
             <AnimatedSidebarGroupLabel className="h-auto px-3 text-[10px] leading-4 uppercase tracking-widest">
