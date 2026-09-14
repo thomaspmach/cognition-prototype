@@ -47,7 +47,7 @@ export function ToolCatalog() {
                 <span
                   className={cn(
                     "grid size-10 place-items-center rounded-xl border",
-                    tool.route ? "border-blue-100 bg-blue-50 text-primary" : "bg-muted/60 text-muted-foreground",
+                    tool.route ? "border-primary/10 bg-primary/5 text-primary" : "bg-muted/60 text-muted-foreground",
                   )}
                 >
                   <ToolIcon id={tool.id} />
@@ -94,7 +94,7 @@ export function ToolCatalog() {
           <SearchX aria-hidden="true" className="mx-auto mb-3 size-6 text-muted-foreground" />
           <h3 className="font-medium">No matching tools</h3>
           <p className="mt-1 text-sm text-muted-foreground">Try a tool name or a responsible team.</p>
-          <button type="button" onClick={() => setQuery("")} className="mt-4 rounded-md px-3 py-2 font-medium text-primary hover:bg-blue-50">
+          <button type="button" onClick={() => setQuery("")} className="mt-4 rounded-md px-3 py-2 font-medium text-primary hover:bg-primary/5">
             Clear search
           </button>
         </div>

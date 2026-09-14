@@ -1,6 +1,6 @@
 # Workspace visual foundation
 
-This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses a graphite sidebar and restrained cobalt-blue actions. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
+This operational workspace adapts the [Vercel design analysis](https://github.com/voltagent/awesome-design-md/tree/main/design-md/vercel): precise type, quiet surfaces, hairline boundaries and disciplined spacing. It uses a graphite sidebar and blue actions based on `#0457e5`. There are no marketing heroes, decorative gradients, oversized display headings or copied brand assets.
 
 ## Tokens
 
@@ -14,13 +14,13 @@ The implemented source of truth is `app/globals.css`. Tailwind's semantic colors
 | Quiet surface | `muted` | `#f0f1f4` |
 | Secondary text | `muted-foreground` | `#626977` |
 | Borders | `border` | `#e1e4ea` |
-| Primary action | `primary` / `primary-foreground` | `#175cd3` / `#ffffff` |
-| Focus outline | `ring` | `#2563eb` |
+| Primary action | `primary` / `primary-foreground` | `#0457e5` / `#ffffff` |
+| Focus outline | `ring` | `var(--primary)` → `#0457e5` |
 | Destructive text | `destructive` | `#b42338` |
 | Sidebar surface / text | `sidebar` / `sidebar-foreground` | `#20232b` / `#f4f5f8` |
 | Sidebar secondary text / border | `sidebar-muted` / `sidebar-border` | `#afb5c3` / `#373c48` |
 
-The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and `primary: #bfdbfe`; its active inset marker, footer indicator and focus ring use `#93c5fd`. Text selection uses `#dbeafe` with `#1e3a8a` text. Use semantic tokens for core surfaces. Catalog accents and informational messages use restrained Tailwind blue surfaces; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
+The sidebar scopes Be UI's surface tokens to graphite, with `muted: #2e3340` and `primary: #cdddfa`; its active inset marker, footer indicator and focus ring use `#9bbcf5`. These blue accents mix the base with 80% and 60% white respectively. Text selection uses `#e6eefc` (90% white) with `#023489` text (40% black). Use semantic tokens for core surfaces. Catalog accents and informational messages use `primary` text, 5% primary backgrounds and 10–20% primary borders; success and error messages use emerald and rose backgrounds with dark text. Always pair status color with words.
 
 ## Type, spacing and shape
 
