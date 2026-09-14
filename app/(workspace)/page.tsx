@@ -1,7 +1,9 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { ToolCatalog } from "@/components/workspace/tool-catalog";
+import { requirePageActor } from "@/lib/server/page-access";
 
-export default function OverviewPage() {
+export default async function OverviewPage() {
+  await requirePageActor();
   return (
     <>
       <PageHeader
@@ -11,8 +13,8 @@ export default function OverviewPage() {
       />
       <ToolCatalog />
       <div className="mt-8 flex flex-wrap justify-between gap-3 border-t pt-5 text-xs leading-5 text-muted-foreground">
-        <p>KYC is the first UI foundation. More tools are planned.</p>
-        <p>Access labels describe planned roles; authentication is not connected.</p>
+        <p>Review onboarding cases with your team.</p>
+        <p>Local demonstration · All data is synthetic.</p>
       </div>
     </>
   );

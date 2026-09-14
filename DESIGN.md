@@ -38,7 +38,7 @@ Navigation content has 36px top padding below the brand. Section labels use thei
 
 Both navigation and catalog consume `lib/tool-registry.ts`. Active destinations have a neutral gray surface, dark text and `aria-current="page"`. Keyboard focus retains its blue outline independently of selection. Next.js links retain sidebar state when switching destinations. Icon-only links retain accessible names and hover titles.
 
-KYC is labeled **UI foundation** until its functional workflow is implemented. Refunds and Feature Flags are **Preview only**: disabled sidebar buttons, no catalog link and no route. Each preview explains that it is not implemented. Planned access labels are metadata, not authorization.
+KYC is labeled **Available** and its page displays the authenticated role. Refunds and Feature Flags are **Preview only**: disabled sidebar buttons, no catalog link and no route. Each preview explains that it is not implemented. Registry access labels remain metadata; server helpers enforce workspace and KYC permissions.
 
 ## Shared components
 
@@ -54,7 +54,7 @@ Actual [Be UI](https://beui.dev) registry source lives in `components/motion`; r
 | Action feedback | `ActionButton`, wrapping Be UI stateful button; `Feedback` for accessible inline messages |
 | Page heading | `PageHeader`, shared by Overview and KYC |
 
-The KYC foundation uses an empty queue and an explicitly labeled, read-only detail example. There are no case records, assignment controls, simulated decisions or fake mutations. Future actions may use idle/loading/success/error states without inventing a second button system.
+KYC uses the shared table for synthetic cases and the shared detail panel for customer fields, ownership, decisions and chronological history. Actions use the shared stateful button and feedback. Native labeled selects and a textarea use the existing card, border and focus tokens. Pending is informational, Escalated is warning, Approved is success and Rejected is danger; all statuses include text. Viewer and terminal cases explain read-only access. Loading, empty, validation, denied/request-error, retry and committed-success states reflect real server requests. The login screen uses Be UI inputs and the same tokens without the protected workspace navigation.
 
 ## Accessibility and motion
 

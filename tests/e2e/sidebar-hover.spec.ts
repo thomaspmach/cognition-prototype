@@ -6,7 +6,7 @@ test("sidebar hover highlights links without highlighting disabled previews", as
   const kyc = nav.getByRole("link", { name: "KYC Case Review" });
   await kyc.hover();
   await expect(kyc).toHaveCSS("background-color", "rgb(240, 241, 244)");
-  await expect(kyc.getByText("UI foundation")).toBeVisible();
+  await expect(kyc.getByText("Available")).toBeVisible();
 
   for (const name of ["Refunds Dashboard", "Feature Flag Admin"]) {
     const preview = nav.getByRole("button", { name: `${name} — Preview only` });

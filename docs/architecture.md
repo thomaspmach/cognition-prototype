@@ -1,20 +1,22 @@
 # Architecture and extension points
 
-## Implemented foundation
+## Implemented workspace
 
-This is one Next.js App Router application, using TypeScript, Tailwind and actual Be UI source. [Issue #1](https://github.com/thomaspmach/cognition-prototype/issues/1) supplies the implementation below; [epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7) owns product scope.
+This is one Next.js App Router application, using TypeScript, Tailwind and actual Be UI source. Issues #1–#2 supply the shared workspace and standards; #3 adds authenticated KYC review. [Epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7) owns product scope.
 
 | Responsibility | Current implementation |
 | --- | --- |
-| Root shell | [app/layout.tsx](../app/layout.tsx) wraps route content in `WorkspaceShell` |
+| Root / authenticated shell | [app/layout.tsx](../app/layout.tsx) supplies styles; [workspace layout](../app/(workspace)/layout.tsx) verifies the session and wraps protected content in `WorkspaceShell` |
 | Persistent navigation/header | [workspace-shell.tsx](../components/workspace/workspace-shell.tsx) consumes the shared registry and retains sidebar state through client navigation |
-| Overview catalog/search | [app/page.tsx](../app/page.tsx) and [tool-catalog.tsx](../components/workspace/tool-catalog.tsx) |
+| Overview catalog/search | [Overview](../app/(workspace)/page.tsx) and [tool-catalog.tsx](../components/workspace/tool-catalog.tsx) |
 | Tool metadata | [lib/tool-registry.ts](../lib/tool-registry.ts): `ToolId`, `WorkspaceRole`, `WorkspaceTool`, `toolRegistry`, `availabilityLabels`, `filterTools` |
 | Icon mapping | [tool-icon.tsx](../components/workspace/tool-icon.tsx): `ToolIcon` maps each `ToolId` |
-| KYC route/composition | [app/tools/kyc/page.tsx](../app/tools/kyc/page.tsx) and [kyc-foundation.tsx](../components/workspace/kyc-foundation.tsx) |
+| KYC route/composition | [KYC page](../app/(workspace)/tools/kyc/page.tsx) and [kyc-queue.tsx](../components/kyc/kyc-queue.tsx) |
+| Identity / authorization | [auth.ts](../lib/server/auth.ts), [access.ts](../lib/server/access.ts), [page-access.ts](../lib/server/page-access.ts) |
+| Data / business operations | [database.ts](../lib/server/database.ts), [schema.ts](../lib/server/schema.ts), [kyc.ts](../lib/server/kyc.ts) |
 | Visual tokens | [app/globals.css](../app/globals.css), explained in [DESIGN.md](../DESIGN.md) |
 
-The KYC page has an empty queue and read-only panel example. There is no session, authorization helper, data layer, case workflow or presentation-configuration schema. The registry's role names are descriptive metadata. Refunds and Feature Flags are previews with no routes.
+KYC has a searchable/filterable queue, case details, assignment and decisions with persisted history. Workspace pages independently require a server session, and the data service protects every read/write. The registry's role names are descriptive metadata. Refunds and Feature Flags are previews with no routes.
 
 ### Shared UI to reuse
 
@@ -34,29 +36,34 @@ Inspect the underlying [table API](../components/motion/table/types.ts) and [sta
 
 Follow the [build skill](../.agents/skills/build-internal-tool/SKILL.md) for intake and confirmation. The following are extension instructions, not additional tools implemented by issue #2.
 
-1. **Choose a route and module boundary.** Add an App Router page at `app/tools/<tool-id>/page.tsx` (a new path for the chosen tool), using the existing KYC page as the composition example. Keep tool-specific components and rules together rather than embedding them in the root shell. The current small UI composes from `components/workspace/`; extract shared code only when it has a real reusable contract.
+1. **Choose a route and module boundary.** Add an App Router page at `app/(workspace)/tools/<tool-id>/page.tsx`, using KYC as the composition example and calling `requirePageActor()` in the page itself as well as relying on the layout. Route groups do not change the public URL. Keep tool-specific components/rules together, as in `components/kyc` and `lib/kyc`; extract shared code only when it has a real reusable contract.
 2. **Register once.** Extend `ToolId` and add an entry in `lib/tool-registry.ts` with unique id, name, description, responsible team, access requirements and availability. Extend the `icons` mapping in `components/workspace/tool-icon.tsx`. Available/foundation entries require a `/tools/...` route; preview entries must use `route: null`. Do not add placeholder pages for previews.
-3. **Check both registry consumers.** Sidebar navigation and catalog cards already read `toolRegistry`; do not create a second navigation list. Inspect both consumers for wording and behavior: the current catalog link says “Open foundation” and the shell says “Foundation build.” When shipping a functional tool, update foundation-only presentation to reflect actual availability rather than assuming the metadata alone updates all copy.
-4. **Compose the UI.** Use the shared components above and the implemented design tokens. Root layout already supplies navigation and the main landmark. Define actual loading, empty, validation-error, denied-access and success behavior as applicable; see [tool standards](internal-tools-standards.md).
+3. **Check both registry consumers.** Sidebar navigation and catalog cards read `toolRegistry`; do not create a second navigation list. Keep labels, links and availability consistent with the actual capability.
+4. **Compose the UI.** Use the shared components above and the implemented design tokens. The authenticated workspace layout supplies navigation and the main landmark. Define actual loading, empty, validation-error, denied-access and success behavior as applicable; see [tool standards](internal-tools-standards.md).
 5. **Define and implement access before exposing protected behavior.** Treat registry roles as visibility metadata only. Read the [security requirements](security.md#server-and-data-requirements-for-functional-tools). Protect route reads, server actions/handlers and data access independently. Reuse actual server helpers when they exist; if missing, include them as explicit implementation dependencies in the confirmed specification. Do not substitute hidden buttons or a client-controlled role.
-6. **Add data setup when needed.** Follow the future integration requirements below. Keep server-only database/session access out of client components and the shared registry. Place business rules with the tool; promote only reusable identity, authorization or event-recording mechanisms to shared modules.
+6. **Add data setup when needed.** Follow the integration boundary below. Keep server-only database/session access out of client components and the shared registry. Place business rules with the tool; promote only reusable identity, authorization or event-recording mechanisms to shared modules.
 7. **Add meaningful tests.** Extend the existing [registry](../tests/tool-registry.test.ts) and [catalog](../tests/tool-catalog.test.tsx) contracts for new metadata/destinations while preserving preview safety. Add Vitest coverage under `tests/` using `*.test.ts` or `*.test.tsx`; [vitest.config.ts](../vitest.config.ts) uses jsdom by default, so server/database tests will need an appropriate Node test environment. Add browser specs under `tests/e2e/`, following [workspace.spec.ts](../tests/e2e/workspace.spec.ts) and [playwright.config.ts](../playwright.config.ts). Verify navigation, actual behavior and direct denied operations, not just component existence.
 8. **Verify and document the result.** Run the [repository commands](../AGENTS.md#setup-and-checks), map results to the confirmed acceptance criteria, and update the README and these references whenever new commands, modules or capabilities are introduced.
 
-## Future server/data integration
+## Server and data integration
 
-[Issue #3](https://github.com/thomaspmach/cognition-prototype/issues/3) establishes maintained authentication, SQLite/Drizzle persistence, migrations and repeatable synthetic seeds. These dependencies are not installed and their modules, database location and setup commands do not exist yet. Do not invent an executable migration, seed, reset or login command for the current checkout.
+[Better Auth](../lib/server/auth.ts) uses its Drizzle SQLite adapter with database-backed sessions, email/password login, disabled signup and server-controlled roles. Session lookup is followed by a current database role lookup. The client uses the library's `signIn.email` and `signOut`; `/api/auth/[...all]` delegates to its Next.js handler. Password hashing comes from Better Auth.
 
-When implementing that dependency:
+`lib/server/database.ts` opens SQLite with foreign keys, WAL and a busy timeout. Drizzle schemas cover users/accounts/sessions/verifications, cases and events. Generated migrations live in `drizzle/`. See [README setup](../README.md#run-locally) for verified environment, migration, seed, sign-in and fresh-database commands.
 
-- Choose and document the server-only identity/data module locations and the boundary between route/UI, tool rules and reusable server helpers.
-- Commit schema and generated migrations using the selected migration tooling. Add executable migration/seed commands to `package.json`; document exact paths, database location and setup order after testing them.
-- Make seed behavior repeatable with synthetic identities/data; document rerun semantics and explicit reset steps, warning before deleting local state.
-- Verify clean database setup, permissions, mutations and matching events, failure rollback, repeat/concurrent writes and persisted results after refresh. Follow the tool's own issue for its domain rules.
-- Update this document, the README and security references with the actual commands and controls in the same implementation PR. Local SQLite persistence does not establish durable storage on serverless hosting.
+KYC's boundaries:
 
-[Issue #4](https://github.com/thomaspmach/cognition-prototype/issues/4) will define the bounded presentation configuration and independent merge gate after #3. Until those exist, there is no implemented configurable-filter surface or configuration-only merge path. See [security](security.md#review-and-merge-boundary).
+- `lib/kyc/model.ts`: client/server DTOs, strict Zod input validation and transition definitions.
+- `GET /api/kyc/cases`: authenticated search and status/assignee/country filtering.
+- `GET /api/kyc/cases/[id]`: authenticated details and event history.
+- `POST /api/kyc/cases/[id]`: Reviewer session plus same-origin check, strict mutation validation and transactional service.
+- `lib/server/kyc.ts`: rechecks authorization, validates current state and assignee, applies a versioned mutation and event in one immediate SQLite transaction. A unique `(case_id, version)` event constraint reinforces consistency. Conflicts return 409; failed operations do not record successful events.
+- `components/kyc`: shared-component composition, request/error handling and reload after conflicts. A `case` URL parameter keeps the detail panel open through refresh.
+
+Assignment is nonexclusive operational ownership: any authorized Reviewer can act on any nonterminal case. [README roles/transitions](../README.md#kyc-roles-and-transitions) describes the complete rules. All data is synthetic; history is not a tamper-proof audit system.
+
+`lib/kyc/presentation.ts` initially enables only status and assignee filters. Country remains visible and its reusable filter capability is tested. [Issue #4](https://github.com/thomaspmach/cognition-prototype/issues/4) will define the bounded configuration contract and independent merge gate; neither exists yet. See [security](security.md#review-and-merge-boundary).
 
 ## Verification boundary
 
-The existing Vitest and Playwright suites test the UI foundation. Issue #2 can validate documentation references, procedures and skill format against that code. Guided creation during #3 and fresh-session creation/change integration are tracked by [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5); final integrated clean-state verification belongs to [issue #6](https://github.com/thomaspmach/cognition-prototype/issues/6). Do not report those future workflows as passed from a documentation walkthrough or a foundation test run.
+Vitest covers the registry, filters and server integration; Playwright covers login, the workspace, KYC workflows and direct HTTP requests against a production build with a clean database. Failure-injection tests prove atomic case/event rollback. These checks validate #3, not the fresh-session creation/change workflow in [#5](https://github.com/thomaspmach/cognition-prototype/issues/5) or final integrated verification in [#6](https://github.com/thomaspmach/cognition-prototype/issues/6).
