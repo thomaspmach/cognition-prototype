@@ -13,7 +13,7 @@ Read [AGENTS.md](../../../AGENTS.md), its required references and any supplied i
 
 Trace the named tool through the shared registry to its route, UI, tests and any server/data code. Use [architecture](../../../docs/architecture.md) to find reusable components and supported capabilities. Verify their existence and current behavior in source; a future requirement or registry access label is not an implemented capability.
 
-For example, KYC supports country filtering but disables it by default. Its only pre-authorized surface is [presentation.json](../../../lib/kyc/presentation.json), validated by [presentation-schema.ts](../../../lib/kyc/presentation-schema.ts). Inspect the current value and supported UI capability before changing it. The contract allows supported filters, a permutation of all six required columns and page sizes 10/25/50.
+For example, KYC supports country filtering, enabled by the configuration-only change in issue #5. Its only pre-authorized surface is [presentation.json](../../../lib/kyc/presentation.json), validated by [presentation-schema.ts](../../../lib/kyc/presentation-schema.ts). Inspect the current value and supported UI capability before changing it; the requested outcome may already be implemented. The contract allows supported filters, a permutation of all six required columns and page sizes 10/25/50.
 
 ## 2. Establish the implementation boundary
 

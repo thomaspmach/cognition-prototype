@@ -1,6 +1,26 @@
-# Owner settings and activation: issue #4
+# Merge controls: observed state and owner reference
 
-**Native-gate correction: Not verified live.** Main already has an active ruleset and the earlier custom-check publisher. The correction must receive human review and a separately authorized normal protected merge before its main-sourced policy can operate. No repository settings are changed by these files. Local tests, mocked HTTP responses and workflow files do not prove GitHub recognizes the required check or the intended review boundary.
+**Native policy introduced on main:** [PR #16](https://github.com/thomaspmach/cognition-prototype/pull/16) replaced the custom-check publisher in main revision `151e964385c6b6c0717988ec37ba35334486bde7`. Its merge alone does not demonstrate GitHub's recognition of the required job or the intended review boundary. Record current-revision evidence in [PR #15's acceptance report](https://github.com/thomaspmach/cognition-prototype/pull/15); local tests, mocked HTTP and workflow files are not live enforcement evidence.
+
+## Historical settings read-back — 2026-09-14
+
+The owner activated [ruleset 23344201](https://github.com/thomaspmach/cognition-prototype/rules/23344201); see the [owner read-back](https://github.com/thomaspmach/cognition-prototype/issues/4#issuecomment-5668470821). Read-only inspection for #6 confirmed protected main at `e6bab5ab0b5f59ba0bea71a7a58fea2acccb4e2e`, active rules, and no CODEOWNERS syntax errors:
+
+- `ci/quality` and `kyc/presentation-policy` are required from GitHub Actions App **15368**, with strict up-to-date branches.
+- Native Code Owner review is required with zero blanket approvals. Stale reviews are dismissed; conversations must be resolved. GitHub also returns `require_extra_approval_for_unattributed_changes: true`; last-push approval is not required.
+- Deletion and force pushes are blocked. The owner reported no bypass actors; the current integration read-back reports `current_user_can_bypass: never`.
+- Repository `allow_auto_merge=false`. [PR #14](https://github.com/thomaspmach/cognition-prototype/pull/14) remains open, unmerged and without auto-merge.
+
+Read-back endpoints: `GET /repos/thomaspmach/cognition-prototype/rulesets/23344201`, `/rules/branches/main`, `/branches/main`, `/codeowners/errors`, the repository metadata and `/pulls/14`. The repository-wide Actions default-permissions endpoint returned **403** to the integration. Its current value is **Not verified** here; the owner's historical read-back records read-only defaults and disabled workflow PR approvals. This access limitation grants no permission to change credentials or settings.
+
+### Historical behavior demonstrated in #5
+
+[Issue #5's final acceptance report](https://github.com/thomaspmach/cognition-prototype/issues/5#issuecomment-5670914659) links the revision-specific checks and observations:
+
+- [PR #13](https://github.com/thomaspmach/cognition-prototype/pull/13), a valid JSON-only country-filter change, passed both checks and completed a separately authorized **normal protected merge** without human review. This was not automatic merge completion.
+- Before that merge advanced main, PR #14 passed both checks but remained blocked without non-author Code Owner approval. Afterwards it also became behind main and failed the stale-base policy guard. The current stale check is separate from the historical isolated review block.
+
+**The entire issue #4 live matrix and automatic merge completion have not been demonstrated.** The authorized update of PR #15 from main provides a new PR event for checking the native gate. It does not authorize merging PR #15, changing PR #14, opening additional probes, enabling auto-merge or changing protections. Use the matrix below to distinguish established historical evidence from remaining verification.
 
 ## Contract and required behavior
 
@@ -55,6 +75,8 @@ Native review requirements remain independent, including stale-review dismissal 
 
 ## Existing owner-applied configuration — preserve unchanged
 
+Before any separately authorized settings change, inspect all existing rulesets and branch protections. Do not weaken or delete an existing control to make this design work. If another rule imposes blanket review or conflicts with the intended exception, obtain an explicit decision.
+
 Ruleset [`23344201`, `kyc-main-merge-policy`](https://github.com/thomaspmach/cognition-prototype/settings/rules/23344201) was read back during the 2026-09-15 investigation:
 
 | Control | Observed setting |
@@ -73,29 +95,31 @@ The [owner's settings read-back](https://github.com/thomaspmach/cognition-protot
 
 ## Activation sequence — owner-controlled, after separate approval
 
-1. Deliver the separate fix PR against current main. Its candidate workflow/validator is not its own eligibility authority: the existing trusted policy on main evaluates it as an outside-scope change. Local regression results establish implementation behavior only.
-2. Before requesting merge approval, inspect the fix PR's actual required checks, suite associations, exact head/base, unresolved threads and authorized non-author Code Owner review. Both existing required contexts must satisfy GitHub's merge box under the unchanged ruleset. If the old publisher leaves the fix PR **Expected**, a standalone green check is insufficient: report the bootstrap blocker and stop. Do not manufacture a check, change required sources, repeatedly rerun jobs, disable protection or use bypass.
-3. Only if that normal protected path is available may the owner separately authorize a normal merge. Preparing or approving this patch is not merge approval. Keep auto-merge disabled. PR #15's code and PR #14 remain outside this correction.
-4. After the approved correction is on trusted main, obtain separate authorization for **unmerged** probe PRs. Observe the native required check in its own current suite, exact head/base and Actions App `15368`; confirm `ci/quality`, the configured sources and actual merge-box requirements. After a later legitimate PR event, verify a new suite contains its own native required job. An audit success or API `isRequired: true` alone is insufficient.
+1. PR #16 introduced the native policy on main. Future policy corrections must also be evaluated by the existing trusted main policy as outside-scope changes; a candidate workflow/validator is not its own eligibility authority. Local regression results establish implementation behavior only.
+2. Before requesting merge approval, inspect the PR's actual required checks, suite associations, exact head/base, unresolved threads and authorized non-author Code Owner review. Both required contexts must satisfy GitHub's merge box under the unchanged ruleset. A context still shown as **Expected** is a blocker even when an API success exists. The old publisher's bootstrap problem above is historical; do not restore it, manufacture a check, change required sources, repeatedly rerun jobs, disable protection or use bypass.
+3. Only if that normal protected path is available may the owner separately authorize a normal merge. Updating PR #15 from main and verifying it are not merge approval. Keep auto-merge disabled and PR #14 unchanged.
+4. Use the authorized PR #15 update to inspect the native required check in its own current suite, exact head/base and Actions App `15368`; confirm `ci/quality`, the configured sources and actual merge-box requirements. Opening additional **unmerged** probe PRs requires separate authorization. After a later legitimate PR event, verify a new suite contains its own native required job. An audit success or API `isRequired: true` alone is insufficient.
 5. Verify the intended review boundary with configuration-only and outside-scope probes before/after authorized non-author approval, then the failure/staleness rows below. Record PR URLs, suite/run IDs, revisions, conclusions and merge/review state. Do not merge probes. The broader issue #4 matrix and automatic merge completion remain **Not verified**.
 
 ### Live verification matrix
 
 | Probe | Required evidence | Current status |
 | --- | --- | --- |
-| Valid JSON-only edit (e.g. enable country, reorder columns, change page size) | Both genuine checks pass; no human approval required; merge box requirements satisfied | **Not verified** |
-| Harmless outside-scope or mixed change, ordinary CI passing | GitHub blocks without required non-author Code Owner approval, independently of classification text | **Not verified** |
+| Valid JSON-only edit (e.g. enable country, reorder columns, change page size) | Both genuine checks pass; no human approval required; merge box requirements satisfied | **Passed historically for country activation**, PR #13; other examples not exercised live |
+| Harmless outside-scope or mixed change, ordinary CI passing | GitHub blocks without required non-author Code Owner approval, independently of classification text | **Passed historically for the documentation-only proposal**, PR #14 before main advanced; mixed case not exercised live |
 | Same valid outside-scope PR after authorized non-author approval | Required review and checks satisfied; no merge performed | **Not verified** |
 | Invalid JSON-only and mixed configurations, with human approval | Policy fails and merging remains blocked | **Not verified** |
 | Config rename/deletion/mode change; workflow/policy/CODEOWNERS edits | Invalid config stays blocked; outside paths require review; proposed validator does not execute as its own authority | **Not verified** |
 | Genuine failing/cancelled CI with otherwise valid configuration | Required quality check blocks despite policy success or approval | **Not verified** |
-| Head/base update after successful checks/review | Current head/base reevaluated; stale approvals/checks cannot establish eligibility | **Not verified** |
-| Check provenance and token isolation | Required sources match genuine Actions records; trusted job executes only main; candidate job has no Checks-write token or additional privileged credential | **Not verified** |
+| Head/base update after successful checks/review | Current head/base reevaluated; stale approvals/checks cannot establish eligibility | **Not verified as a complete scenario**; #5 records PR #14's stale-base failure after main advanced, not stale-review/head-update coverage |
+| Check provenance and token isolation | Required sources match genuine Actions records; trusted job executes only main; candidate job has no Checks-write token or additional privileged credential | **Not verified as a complete scenario**; #5 records genuine Actions sources and #6 reads workflow source; trusted-writer limitation still applies |
 | Actual configuration-only and reviewed auto-merge completion | Separately authorized real merges, with no bypass/self-approval | **Not verified; not authorized in this task** |
 
-No local assertion demonstrates native Code Owner enforcement or spoof resistance. Local tests cover the contract, complete Git diffs, API integrity/staleness, event-bound PR isolation, failure propagation and read-only audit behavior using **mock HTTP responses**. Application tests/build/Playwright cover KYC behavior. Fresh-session skill validation (#5) and final integrated verification (#6) remain separate.
+No local assertion demonstrates native Code Owner enforcement or spoof resistance. Local tests cover the contract, complete Git diffs, API integrity/staleness, event-bound PR isolation, failure propagation and read-only audit behavior using **mock HTTP responses**. Application tests/build/Playwright cover KYC behavior. Historical fresh-session skill validation (#5) and final integrated verification (#6) are separate from the remaining #4 probes.
 
 ## Entering auto-merge after activation
+
+**Currently disabled.** The following is an owner-controlled future procedure, not a command needed for local setup, skill completion or #6 verification.
 
 An authorized repository writer may enable GitHub auto-merge on a specifically authorized PR after inspecting the full diff and effective controls. For example, from this checkout:
 
