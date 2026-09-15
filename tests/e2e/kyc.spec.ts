@@ -261,11 +261,14 @@ test("configured page size reaches the last record and preserves case navigation
 });
 
 test("queue and detail request failures can be retried", async ({ page }) => {
+  const errorId = "018fa167-2b68-4e44-a5d6-476621c7b81d";
   await page.route("**/api/kyc/cases?*", (route) => route.fulfill({
-    status: 500, json: { error: "Queue unavailable for this test." },
+    status: 500, json: { error: `Queue unavailable for this test. Reference: ${errorId}`, errorId },
   }));
   await page.goto("/tools/kyc");
-  await expect(page.getByRole("region", { name: "Onboarding queue" }).getByRole("alert")).toContainText("Queue unavailable");
+  const feedback = page.getByRole("region", { name: "Onboarding queue" }).getByRole("alert");
+  await expect(feedback).toContainText("Queue unavailable");
+  await expect(feedback).toContainText(`Reference: ${errorId}`);
   await page.unroute("**/api/kyc/cases?*");
   await page.getByRole("button", { name: "Refresh queue" }).click();
   await expect(page.getByRole("button", { name: "Open KYC-0002" })).toBeVisible();
