@@ -1,21 +1,21 @@
-name: KYC presentation policy
+name: KYC policy audit
 
 on:
-  pull_request_target:
+  push:
     branches: [main]
-    types: [opened, synchronize, reopened, edited, ready_for_review]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: read
 
 concurrency:
-  group: kyc-policy-pr-${{ github.event.pull_request.number }}
+  group: kyc-policy-audit-main
   cancel-in-progress: false
 
 jobs:
-  evaluate:
-    name: kyc/presentation-policy
+  audit:
+    name: Audit open PR policies
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -27,6 +27,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version-file: .nvmrc
-      - run: node scripts/check-kyc-presentation.ts --pr
+      - run: node scripts/check-kyc-presentation.ts --audit
         env:
           GITHUB_TOKEN: ${{ github.token }}
