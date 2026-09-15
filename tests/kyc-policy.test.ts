@@ -1,7 +1,7 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { columnIds, presentationPath } from "@/lib/kyc/presentation-schema";
 import {
@@ -179,7 +179,8 @@ describe("diff and API integrity", () => {
 
   it("only accepts supported main-sourced events", () => {
     const payload = { repository: { full_name: repository } };
-    expect(() => assertEvent("push", "refs/heads/main", payload, repository)).not.toThrow();
+    expect(assertEvent("push", "refs/heads/main", payload, repository)).toEqual({ kind: "audit" });
+    expect(assertEvent("workflow_dispatch", "refs/heads/main", payload, repository)).toEqual({ kind: "audit" });
     expect(() => assertEvent("workflow_dispatch", "refs/heads/candidate", payload, repository)).toThrow();
     expect(() => assertEvent("pull_request", "refs/pull/1/merge", payload, repository)).toThrow();
     expect(() => assertEvent("workflow_run", "refs/heads/main", payload, repository)).toThrow();
@@ -188,36 +189,98 @@ describe("diff and API integrity", () => {
       ...payload, pull_request: { base: { ref: "other", repo: { full_name: repository } } },
     }, repository)).toThrow();
   });
+
+  it("binds a PR event to its number, repository, base and head", () => {
+    const head = configure();
+    const pull = {
+      number: 1, state: "open", base: { ref: "main", sha: base, repo: { full_name: repository } },
+      head: { sha: head }, changed_files: 1,
+    };
+    const payload = { repository: { full_name: repository }, number: 1, pull_request: pull };
+    expect(assertEvent("pull_request_target", "refs/heads/main", payload, repository)).toEqual({
+      kind: "pr", pull: parsePull(pull),
+    });
+    for (const delta of [{ number: 2 }, { state: "closed" }, { head: { sha: "invalid" } }, { changed_files: undefined }]) {
+      expect(() => assertEvent("pull_request_target", "refs/heads/main", {
+        ...payload, pull_request: { ...pull, ...delta },
+      }, repository)).toThrow();
+    }
+    expect(() => assertEvent("pull_request_target", "refs/heads/candidate", payload, repository)).toThrow();
+  });
+
+  it.each([
+    ["push", "--pr"], ["workflow_dispatch", "--pr"], ["push", ""],
+    ["pull_request_target", "--audit"],
+  ])("fails the CLI before HTTP access for %s with mode %s", (eventName, mode) => {
+    const payloadPath = join(directory, "event.json");
+    writeFileSync(payloadPath, JSON.stringify({
+      repository: { full_name: repository }, number: 1,
+      pull_request: {
+        number: 1, state: "open", base: { ref: "main", sha: base, repo: { full_name: repository } },
+        head: { sha: base }, changed_files: 1,
+      },
+    }));
+    const result = spawnSync(process.execPath, [resolve("scripts/check-kyc-presentation.ts"), ...(mode ? [mode] : [])], {
+      cwd: directory, encoding: "utf8",
+      env: {
+        ...process.env, GITHUB_EVENT_NAME: eventName, GITHUB_REF: "refs/heads/main",
+        GITHUB_REPOSITORY: repository, GITHUB_EVENT_PATH: payloadPath, GITHUB_TOKEN: "",
+      },
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Wrong policy mode for event.");
+  });
 });
 
-describe("publisher with a local Git fixture and mocked HTTP (not live enforcement)", () => {
-  it.each(["valid", "outside", "invalid-approved", "truncated", "stale", "api-failure"] as const)(
-    "publishes the evaluated head and correct conclusion for %s", async (scenario) => {
+describe("native job evaluator with local Git and mocked HTTP (not live enforcement)", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([
+    "valid", "updated-main", "outside", "invalid-approved", "truncated", "stale-head-before", "stale-head-after",
+    "stale-base-before", "stale-base-after", "stale-main-after", "stale-policy", "api-failure", "wrong-pr",
+  ] as const)(
+    "evaluates only the triggering PR without check writes for %s", async (scenario) => {
+      if (scenario === "updated-main") {
+        git("checkout", "main");
+        write("app/page.tsx", "updated main\n");
+        base = commit();
+        git("checkout", "candidate");
+        git("merge", "--ff-only", "main");
+      }
       if (scenario === "outside") write("scripts/policy.ts", "candidate policy must not execute\n");
       const head = configure({ ...valid, pageSize: scenario === "invalid-approved" ? 1000 : 10 });
       const count = scenario === "outside" ? 2 : 1;
       git("update-ref", "refs/pull/1/head", head);
-      git("checkout", "main");
+      if (scenario !== "stale-policy") git("checkout", "main");
       git("remote", "add", "origin", directory);
-      const writes: { path: string; body: Record<string, unknown> }[] = [];
+      const requests: { path: string; method: string }[] = [];
       let reads = 0;
+      let mainReads = 0;
       const request: typeof fetch = async (input, options) => {
         const url = new URL(String(input));
         const path = url.pathname.replace(`/repos/${repository}`, "") + url.search;
-        if (options?.method === "POST" || options?.method === "PATCH") {
-          writes.push({ path, body: JSON.parse(String(options.body)) });
-          return Response.json({ id: 42 });
-        }
-        if (path.startsWith("/pulls?")) return Response.json([{ number: 1 }]);
+        requests.push({ path, method: options?.method ?? "GET" });
+        if (path.startsWith("/pulls?")) return Response.json([{ number: 1 }, { number: 14 }]);
+        if (path === "/pulls/14") return new Response(null, { status: 503 });
         if (path === "/pulls/1") {
           reads++;
+          const staleHead = scenario === "stale-head-before" || (scenario === "stale-head-after" && reads > 1);
+          const staleBase = scenario === "stale-base-before" || (scenario === "stale-base-after" && reads > 1);
           return Response.json({
-            number: 1, state: "open", base: { ref: "main", sha: base, repo: { full_name: repository } },
-            head: { sha: scenario === "stale" && reads > 1 ? "d".repeat(40) : head },
+            number: scenario === "wrong-pr" ? 2 : 1, state: "open",
+            base: { ref: "main", sha: staleBase ? "c".repeat(40) : base, repo: { full_name: repository } },
+            head: { sha: staleHead ? "d".repeat(40) : head },
             changed_files: count, labels: [{ name: "safe-configuration" }], approved: true, agent_assertion: "safe",
           });
         }
-        if (path === "/git/ref/heads/main") return Response.json({ object: { sha: base } });
+        if (path === "/git/ref/heads/main") {
+          mainReads++;
+          return Response.json({ object: { sha: scenario === "stale-main-after" && mainReads > 1 ? "c".repeat(40) : base } });
+        }
         if (path.startsWith("/pulls/1/files?")) {
           if (scenario === "api-failure") return new Response(null, { status: 503 });
           if (scenario === "truncated") return Response.json([]);
@@ -228,24 +291,72 @@ describe("publisher with a local Git fixture and mocked HTTP (not live enforceme
         }
         throw new Error(`Unexpected mock API request: ${path}`);
       };
-      const run = runPolicy({ directory, repository, token: "local-test-placeholder", request });
-      const success = scenario === "valid" || scenario === "outside";
+      const run = runPolicy({
+        directory, repository, token: "local-test-placeholder", request,
+        event: {
+          kind: "pr",
+          pull: { number: 1, state: "open", baseRef: "main", baseRepository: repository, base, head, changedFiles: count },
+        },
+      });
+      const success = scenario === "valid" || scenario === "updated-main" || scenario === "outside";
       if (success) await expect(run).resolves.toBeUndefined();
       else await expect(run).rejects.toThrow();
-      expect(writes[0].body).toMatchObject({ name: "kyc/presentation-policy", head_sha: head, status: "in_progress" });
-      expect(writes[1]).toMatchObject({
-        path: "/check-runs/42", body: { status: "completed", conclusion: success ? "success" : "failure" },
-      });
-      if (scenario === "outside") expect(JSON.stringify(writes[1].body)).toContain("Native required Code Owner review");
+      expect(requests.every(({ method }) => method === "GET")).toBe(true);
+      expect(requests.some(({ path }) => /check-runs|statuses|pulls\?|pulls\/14/.test(path))).toBe(false);
+      if (success) expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`PR #1; base ${base}; head ${head}; policy ${base}`));
+      else expect(console.log).not.toHaveBeenCalled();
+      if (scenario === "outside") expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Native required Code Owner review"));
     },
   );
 
-  it("pins trusted workflow checkout and separates candidate execution from check publishing", () => {
+  it("audits all listed PRs, reports failures and continues without publishing required checks", async () => {
+    const head = configure();
+    git("update-ref", "refs/pull/2/head", head);
+    git("checkout", "main");
+    git("remote", "add", "origin", directory);
+    const requests: { path: string; method: string }[] = [];
+    const request: typeof fetch = async (input, options) => {
+      const url = new URL(String(input));
+      const path = url.pathname.replace(`/repos/${repository}`, "") + url.search;
+      requests.push({ path, method: options?.method ?? "GET" });
+      if (path.startsWith("/pulls?")) return Response.json([{ number: 1 }, { number: 2 }]);
+      if (path === "/pulls/1") return new Response(null, { status: 503 });
+      if (path === "/pulls/2") return Response.json({
+        number: 2, state: "open", base: { ref: "main", sha: base, repo: { full_name: repository } },
+        head: { sha: head }, changed_files: 1,
+      });
+      if (path === "/git/ref/heads/main") return Response.json({ object: { sha: base } });
+      if (path.startsWith("/pulls/2/files?")) return Response.json([{ filename: presentationPath, status: "modified" }]);
+      throw new Error(`Unexpected mock API request: ${path}`);
+    };
+    await expect(runPolicy({
+      directory, repository, token: "local-test-placeholder", request, event: { kind: "audit" },
+    })).rejects.toThrow("One or more PRs failed presentation policy.");
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("PR #1. Validation failed"));
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("PR #2;"));
+    expect(requests.every(({ method, path }) => method === "GET" && !/check-runs|statuses/.test(path))).toBe(true);
+  });
+
+  it("pins trusted checkout and isolates the unconditional native gate from the audit", () => {
     const policy = readFileSync(".github/workflows/kyc-policy.yml", "utf8");
+    const audit = readFileSync(".github/workflows/kyc-policy-audit.yml", "utf8");
     const ci = readFileSync(".github/workflows/ci.yml", "utf8");
     expect(policy).toContain("pull_request_target:");
-    expect(policy).toContain("ref: main");
-    expect(policy).not.toMatch(/npm ci|npm run|secrets\.|cache:/);
+    expect(policy).toContain("name: kyc/presentation-policy");
+    expect(policy).toContain("node scripts/check-kyc-presentation.ts --pr");
+    expect(policy).toContain("group: kyc-policy-pr-${{ github.event.pull_request.number }}");
+    expect(policy).not.toMatch(/push:|workflow_dispatch:|if:|paths:|continue-on-error/);
+    expect(audit).toContain("push:");
+    expect(audit).toContain("workflow_dispatch:");
+    expect(audit).toContain("node scripts/check-kyc-presentation.ts --audit");
+    expect(audit).not.toMatch(/pull_request_target:|name: kyc\/presentation-policy/);
+    for (const workflow of [policy, audit]) {
+      expect(workflow).toContain("ref: main");
+      expect(workflow).toContain("persist-credentials: false");
+      expect(workflow).toContain("contents: read");
+      expect(workflow).toContain("pull-requests: read");
+      expect(workflow).not.toMatch(/npm ci|npm run|secrets\.|cache:|write/);
+    }
     expect(ci).toContain("name: ci/quality");
     expect(ci).toContain("npm run check");
     expect(ci).toContain("npm run build");
