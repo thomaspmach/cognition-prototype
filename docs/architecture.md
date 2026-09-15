@@ -22,7 +22,7 @@ KYC has a searchable/filterable queue, case details, assignment and decisions wi
 
 | Component | Contract and purpose |
 | --- | --- |
-| [PageHeader](../components/shared/page-header.tsx) | `eyebrow`, `title`, `description`, optional children |
+| [PageHeader](../components/shared/page-header.tsx) | Title-only heading with `title` and optional children for role badges or actions |
 | [QueueTable](../components/shared/queue-table.tsx) | Generic `TableProps<T>` wrapper; accepts typed columns, data, row identity and table states |
 | [DetailPanel](../components/shared/detail-panel.tsx) | Controlled `open`/`onOpenChange`, title, description and children; drawer with focus containment/return |
 | [StatusBadge](../components/shared/status-badge.tsx) | Text children and optional `AnimatedBadgeStatus` |

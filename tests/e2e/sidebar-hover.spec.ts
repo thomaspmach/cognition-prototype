@@ -7,6 +7,8 @@ test("sidebar hover highlights links without highlighting disabled previews", as
   await kyc.hover();
   await expect(kyc).toHaveCSS("background-color", "rgb(240, 241, 244)");
   await expect(kyc.getByText("Available")).toBeVisible();
+  await expect(kyc.getByText("Available")).toHaveCSS("margin-top", "0px");
+  await expect(kyc.getByText("Available")).toHaveCSS("line-height", "16px");
 
   for (const name of ["Refunds Dashboard", "Feature Flag Admin"]) {
     const preview = nav.getByRole("button", { name: `${name} — Preview only` });
@@ -23,5 +25,7 @@ test("sidebar hover highlights links without highlighting disabled previews", as
     )).toEqual([]);
     await expect(preview).toHaveCSS("color", textColor);
     await expect(preview.getByText("Preview only")).toBeVisible();
+    await expect(preview.getByText("Preview only")).toHaveCSS("margin-top", "0px");
+    await expect(preview.getByText("Preview only")).toHaveCSS("line-height", "16px");
   }
 });

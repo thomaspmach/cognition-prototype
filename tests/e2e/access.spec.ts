@@ -54,11 +54,16 @@ test("direct HTTP enforces permissions, input validation, terminal state and con
 });
 
 test.describe("sign-in boundary", () => {
+  test.describe.configure({ mode: "serial" });
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test("protects workspace pages, reports invalid credentials and signs out", async ({ page }) => {
     await page.goto("/tools/kyc");
     await expect(page).toHaveURL("/login");
+    await expect(page.getByRole("heading", { name: "Welcome back", level: 1 })).toBeVisible();
+    await expect(page.getByText("company / tools", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Sign in to your internal workspace.", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Local demonstration · Synthetic accounts and cases only.", { exact: true })).toBeVisible();
     await page.getByLabel("Email", { exact: true }).fill("viewer@example.test");
     await page.getByLabel("Password", { exact: true }).fill("wrong-password");
     const [attempt] = await Promise.all([
@@ -74,9 +79,48 @@ test.describe("sign-in boundary", () => {
     await page.getByLabel("Password", { exact: true }).fill("Synthetic-demo-2026!");
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Overview", exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("button", { name: "Account menu", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
     await expect(page).toHaveURL("/login");
     await page.goto("/");
     await expect(page).toHaveURL("/login");
   });
+
+  for (const mode of ["expanded", "collapsed", "mobile"] as const) {
+    test(`footer sign-out supports error recovery in ${mode} mode`, async ({ page }) => {
+      if (mode === "mobile") await page.setViewportSize({ width: 390, height: 844 });
+      const signIn = () => page.request.post("/api/auth/sign-in/email", {
+        data: { email: "viewer@example.test", password: "Synthetic-demo-2026!" },
+      });
+      let response = await signIn();
+      if (response.status() === 429) {
+        await delay((Number(response.headers()["x-retry-after"]) || 10) * 1000 + 100);
+        response = await signIn();
+      }
+      expect(response.status()).toBe(200);
+      await page.goto("/");
+      if (mode !== "expanded") await page.getByRole("button", { name: "Toggle sidebar" }).click();
+      const footer = page.getByRole("group", { name: "Signed in as Morgan Lee, viewer", exact: true });
+      const trigger = footer.getByRole("button", { name: "Account menu", exact: true });
+      await expect(trigger).toBeInViewport();
+      await page.route("**/api/auth/sign-out", (route) => route.fulfill({
+        status: 500, json: { message: "Simulated sign-out failure" },
+      }));
+      await trigger.click();
+      const signOut = page.getByRole("menuitem", { name: "Sign out", exact: true });
+      await expect(signOut).toBeInViewport();
+      await signOut.click();
+      await expect(footer.getByRole("alert")).toHaveText("Sign-out failed. Retry.");
+      await expect(footer.getByRole("alert")).toBeInViewport();
+      await expect(trigger).toBeEnabled();
+      await expect(trigger).toBeFocused();
+      expect(await footer.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      await page.unroute("**/api/auth/sign-out");
+      await trigger.click();
+      await signOut.click();
+      await expect(page).toHaveURL("/login");
+      await page.goto("/tools/kyc");
+      await expect(page).toHaveURL("/login");
+    });
+  }
 });
