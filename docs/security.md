@@ -39,7 +39,7 @@ Use Devin's secret storage or local environment variables for actual credentials
 
 ## Review and merge boundary
 
-**Observed activation and limits:** owner-applied protections and two live paths are documented in [merge controls](merge-controls.md). The full #4 verification matrix and automatic merge completion remain unverified. Repository files alone do not activate protections; if the effective settings or checks cannot be verified for a proposed merge, retain human review and report the gap.
+**Observed activation and limits:** owner-applied protections and historical #5 observations are documented in [merge controls](merge-controls.md). PR #16 introduced the native gate on main; its current required-check recognition must be verified separately. The full #4 verification matrix and automatic merge completion remain unverified. Repository files alone do not activate protections; if the effective settings or checks cannot be verified for a proposed merge, retain human review and report the gap.
 
 **After activation, under the prototype's trusted-writer assumption:**
 
@@ -51,7 +51,7 @@ Use Devin's secret storage or local environment variables for actual credentials
 
 Native required Code Owner review enforces the outside-scope approval requirement using ownership from the base branch. `ci/quality` and `kyc/presentation-policy` are separate required checks. Policy success for a valid outside-scope change does not supply its missing approval. Neither labels nor the evaluator's explanatory classification authorizes a merge.
 
-The evaluator runs main-sourced code and validates raw candidate JSON and complete Git metadata as data. It does not install candidate dependencies, check out candidate code, or execute candidate scripts/actions/artifacts with its Checks-write token. Proposed schema or policy changes are reviewed using the policy already on main.
+The evaluator runs main-sourced code and validates raw candidate JSON and complete Git metadata as data. It does not install candidate dependencies, check out candidate code, or execute candidate scripts/actions/artifacts. The native per-PR job and separate diagnostic audit both use read-only tokens; neither publishes custom checks. Proposed schema or policy changes are reviewed using the policy already on main. See the [protected introduction and reevaluation path](merge-controls.md#activation-sequence--owner-controlled-after-separate-approval); live effectiveness remains unverified until GitHub recognizes the required check and review boundary.
 
 **Trust limitation:** repository writers and maintainers are trusted not to forge check results or deliberately bypass controls. Another workflow on an unmerged branch can request write permissions and publish a matching check under the same GitHub Actions identity. Read-only token defaults and named required checks do not authenticate the originating workflow. This can defeat validation/CI checks; it does not itself supply native Code Owner approval. This prototype does not provide the spoof resistance of an isolated App-bound gate. That hardening would require separate approval and infrastructure; no dedicated App or extra privileged credential is used here.
 

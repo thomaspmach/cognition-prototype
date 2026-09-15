@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { maxPresentationBytes, parsePresentationJson, presentationPath } from "../lib/kyc/presentation-schema.ts";
 
-export const policyCheckName = "kyc/presentation-policy";
 const shaPattern = /^[0-9a-f]{40}$/;
 
 export type DiffEntry = {
@@ -24,6 +23,7 @@ export type PullSnapshot = {
   head: string;
   changedFiles: number;
 };
+export type PolicyEvent = { kind: "pr"; pull: PullSnapshot } | { kind: "audit" };
 
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid API object.");
@@ -168,77 +168,70 @@ export function parseApiFile(value: unknown): ApiFile {
   };
 }
 
-export function assertEvent(eventName: string, ref: string, payload: unknown, repository: string) {
+export function assertEvent(eventName: string, ref: string, payload: unknown, repository: string): PolicyEvent {
   const event = record(payload);
   if (text(record(event.repository).full_name) !== repository) throw new Error("Wrong event repository.");
+  if (ref !== "refs/heads/main") throw new Error("Policy must run from main.");
   if (eventName === "pull_request_target") {
-    const base = record(record(event.pull_request).base);
-    if (base.ref !== "main" || record(base.repo).full_name !== repository) throw new Error("Wrong PR target.");
-  } else if (!["push", "workflow_dispatch"].includes(eventName) || ref !== "refs/heads/main") {
-    throw new Error("Policy must run from main.");
+    const pull = parsePull(event.pull_request);
+    if (pull.number < 1 || pull.number !== integer(event.number) || pull.state !== "open"
+      || pull.baseRef !== "main" || pull.baseRepository !== repository) throw new Error("Wrong PR target.");
+    assertSha(pull.base);
+    assertSha(pull.head);
+    return { kind: "pr", pull };
   }
+  if (!["push", "workflow_dispatch"].includes(eventName)) throw new Error("Unsupported policy event.");
+  return { kind: "audit" };
 }
 
 export async function runPolicy({
-  directory, repository, token, request = fetch,
-}: { directory: string; repository: string; token: string; request?: typeof fetch }) {
+  directory, repository, token, event, request = fetch,
+}: { directory: string; repository: string; token: string; event: PolicyEvent; request?: typeof fetch }) {
   if (!/^[\w.-]+\/[\w.-]+$/.test(repository) || !token) throw new Error("Missing repository or built-in token.");
-  async function api(path: string, method = "GET", body?: object): Promise<unknown> {
+  async function api(path: string): Promise<unknown> {
     const response = await request(`https://api.github.com/repos/${repository}${path}`, {
-      method, redirect: "error",
+      method: "GET", redirect: "error",
       headers: {
         Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json",
       },
-      body: body ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(30_000),
     });
     if (!response.ok) throw new Error(`GitHub API failed (${response.status}).`);
     return response.json();
   }
   const policySha = git(directory, ["rev-parse", "HEAD"]).trim();
-  const pulls = await paginate((page) => api(`/pulls?state=open&base=main&per_page=100&page=${page}`));
-  const numbers = pulls.map((pull) => integer(record(pull).number));
+  const numbers = event.kind === "pr" ? [event.pull.number]
+    : (await paginate((page) => api(`/pulls?state=open&base=main&per_page=100&page=${page}`)))
+      .map((pull) => integer(record(pull).number));
   if (numbers.some((number) => number < 1) || new Set(numbers).size !== numbers.length) {
     throw new Error("Invalid or duplicate PR listing.");
   }
   let failed = false;
   for (const number of numbers) {
-    const pull = parsePull(await api(`/pulls/${number}`));
-    if (pull.number !== number) throw new Error("Wrong PR returned by GitHub.");
-    assertSha(pull.head);
-    const check = record(await api("/check-runs", "POST", {
-      name: policyCheckName, head_sha: pull.head, status: "in_progress",
-      output: { title: "Inspecting current PR and main", summary: `PR #${number}. All merge paths also require ci/quality and native Code Owner rules.` },
-    }));
-    const checkId = integer(check.id);
-    if (checkId < 1) throw new Error("Missing published check ID.");
-    let conclusion = "failure";
-    let summary = "Policy could not establish eligibility.";
     try {
-      git(directory, ["fetch", "--no-tags", "origin", "refs/heads/main", `refs/pull/${number}/head`], token);
+      const pull = parsePull(await api(`/pulls/${number}`));
+      if (pull.number !== number) throw new Error("Wrong PR returned by GitHub.");
+      const snapshot = event.kind === "pr" ? event.pull : pull;
       const main = text(record(record(await api("/git/ref/heads/main")).object).sha);
-      assertCurrent(pull, pull, repository, policySha, main);
+      assertCurrent(snapshot, pull, repository, policySha, main);
+      git(directory, ["fetch", "--no-tags", "origin", "refs/heads/main", `refs/pull/${number}/head`], token);
       const result = inspectPresentation(directory, pull.base, pull.head);
       const files = (await paginate((page) => api(`/pulls/${number}/files?per_page=100&page=${page}`))).map(parseApiFile);
       compareFiles(result.changes, files, pull.changedFiles);
       const current = parsePull(await api(`/pulls/${number}`));
       const currentMain = text(record(record(await api("/git/ref/heads/main")).object).sha);
-      assertCurrent(pull, current, repository, policySha, currentMain);
-      conclusion = "success";
-      summary = `PR #${number}; base ${pull.base}; head ${pull.head}; policy ${policySha}.\n\n`
+      assertCurrent(snapshot, current, repository, policySha, currentMain);
+      console.log(`PR #${number}; base ${pull.base}; head ${pull.head}; policy ${policySha}.\n\n`
         + (result.configurationOnly
           ? "Valid configuration-only diff. No Code Owner is assigned to this path."
           : "Outside-scope diff. Native required Code Owner review must be satisfied.")
-        + "\n\nci/quality must also pass. This check does not grant approval or merge permission.";
+        + "\n\nci/quality must also pass. This result does not grant approval or merge permission.");
     } catch (error) {
+      if (event.kind === "pr") throw error;
       failed = true;
-      summary = `PR #${number}; head ${pull.head}. Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`;
+      console.error(`PR #${number}. Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
-    await api(`/check-runs/${checkId}`, "PATCH", {
-      status: "completed", conclusion,
-      output: { title: conclusion === "success" ? "Valid presentation" : "Presentation policy failed", summary },
-    });
   }
   if (failed) throw new Error("One or more PRs failed presentation policy.");
 }
@@ -247,8 +240,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   try {
     const repository = process.env.GITHUB_REPOSITORY ?? "";
     const payload: unknown = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH ?? "", "utf8"));
-    assertEvent(process.env.GITHUB_EVENT_NAME ?? "", process.env.GITHUB_REF ?? "", payload, repository);
-    await runPolicy({ directory: process.cwd(), repository, token: process.env.GITHUB_TOKEN ?? "" });
+    const event = assertEvent(process.env.GITHUB_EVENT_NAME ?? "", process.env.GITHUB_REF ?? "", payload, repository);
+    if (process.argv.length !== 3 || process.argv[2] !== `--${event.kind}`) throw new Error("Wrong policy mode for event.");
+    await runPolicy({ directory: process.cwd(), repository, token: process.env.GITHUB_TOKEN ?? "", event });
   } catch (error) {
     console.error(error instanceof Error ? error.message : "Presentation policy failed.");
     process.exitCode = 1;
