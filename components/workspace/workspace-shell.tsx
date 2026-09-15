@@ -20,12 +20,14 @@ import { AccountMenu } from "@/components/workspace/account-menu";
 import { availabilityLabels, toolRegistry } from "@/lib/tool-registry";
 import { cn } from "@/lib/utils";
 
+type WorkspaceActor = { name: string; role: string };
+
 const navClass =
   "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-sidebar-muted transition-colors hover:bg-muted hover:text-sidebar-foreground";
 const activeClass = "bg-muted text-sidebar-foreground";
 const menuClass = "flex w-full min-w-0 list-none flex-col gap-1";
 
-function SidebarNavigation() {
+function SidebarNavigation({ actor }: { actor: WorkspaceActor }) {
   const pathname = usePathname();
   const { isMobile, openMobile, setOpenMobile } = useAnimatedSidebar();
   useEffect(() => {
@@ -95,7 +97,7 @@ function SidebarNavigation() {
                       <ToolIcon id={tool.id} className="size-4 shrink-0" />
                       <span className="group-data-[state=collapsed]/sidebar:hidden">
                         <span className="block font-medium">{tool.name}</span>
-                        <span className="mt-0.5 block text-[11px] text-sidebar-muted">
+                        <span className="block text-[11px] leading-4 text-sidebar-muted">
                           {availabilityLabels[tool.availability]}
                         </span>
                       </span>
@@ -113,7 +115,7 @@ function SidebarNavigation() {
                         <ToolIcon id={tool.id} className="size-4 shrink-0" />
                         <span className="group-data-[state=collapsed]/sidebar:hidden">
                           <span className="block">{tool.name}</span>
-                          <span className="mt-0.5 block text-[11px]">Preview only</span>
+                          <span className="block text-[11px] leading-4">Preview only</span>
                         </span>
                       </button>
                       <span id={`nav-preview-${tool.id}`} className="sr-only">
@@ -127,13 +129,19 @@ function SidebarNavigation() {
           </AnimatedSidebarGroup>
         </nav>
       </AnimatedSidebarContent>
-      <AnimatedSidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="flex items-center gap-3 px-2">
-          <Circle aria-hidden="true" className="size-3 shrink-0 text-ring" />
-          <div className="group-data-[state=collapsed]/sidebar:hidden">
-            <p className="text-xs font-medium text-sidebar-foreground">Synthetic workspace</p>
-            <p className="text-[11px] text-sidebar-muted">Internal tools · Prototype</p>
+      <AnimatedSidebarFooter
+        role="group"
+        aria-label={`Signed in as ${actor.name}, ${actor.role}`}
+        title={`${actor.name} · ${actor.role}`}
+        className="border-t border-sidebar-border p-4"
+      >
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-2 group-data-[state=collapsed]/sidebar:grid-cols-1 group-data-[state=collapsed]/sidebar:px-0">
+          <Circle aria-hidden="true" className="size-3 shrink-0 text-ring group-data-[state=collapsed]/sidebar:hidden" />
+          <div className="min-w-0 group-data-[state=collapsed]/sidebar:hidden">
+            <p className="truncate text-xs font-medium text-sidebar-foreground">{actor.name}</p>
+            <p className="text-[11px] text-sidebar-muted capitalize">{actor.role}</p>
           </div>
+          <AccountMenu />
         </div>
       </AnimatedSidebarFooter>
     </AnimatedSidebar>
@@ -142,7 +150,7 @@ function SidebarNavigation() {
 
 export function WorkspaceShell({ children, actor }: {
   children: ReactNode;
-  actor: { name: string; role: string };
+  actor: WorkspaceActor;
 }) {
   const pathname = usePathname();
   const currentTool = toolRegistry.find((tool) => tool.route === pathname);
@@ -159,7 +167,7 @@ export function WorkspaceShell({ children, actor }: {
       >
         Skip to content
       </a>
-      <SidebarNavigation />
+      <SidebarNavigation actor={actor} />
       <div className="relative flex min-h-svh min-w-0 flex-1 flex-col bg-background">
         <header className="flex min-h-16 items-center justify-between gap-3 border-b bg-card px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
@@ -169,7 +177,6 @@ export function WorkspaceShell({ children, actor }: {
             <span aria-hidden="true" className="text-border">/</span>
             <span className="truncate text-sm font-medium">{pageName}</span>
           </div>
-          <AccountMenu actor={actor} />
         </header>
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1440px] min-w-0 p-5 sm:p-8 lg:p-10">
           {children}

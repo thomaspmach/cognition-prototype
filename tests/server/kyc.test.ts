@@ -86,6 +86,32 @@ describe("clean database and server identity", () => {
     expect(await read()).toEqual({ case: expect.objectContaining({ version: 0 }), events: [] });
   });
 
+  it.each(["queue", "detail", "mutation"] as const)("fails closed when session lookup fails during %s", async (operation) => {
+    const before = await read();
+    const sessionLookup = vi.spyOn(auth.api, "getSession").mockRejectedValue(new Error("synthetic-private-session-detail"));
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const request = new Request(`${origin}/api/kyc/cases`, { headers: { cookie: alex } });
+      const response = operation === "queue" ? await queueGET(request)
+        : operation === "detail" ? await GET(request, { params: Promise.resolve({ id: "KYC-0001" }) })
+          : await mutate({ action: "decide", status: "approved", version: 0 });
+      const body = await response.json();
+      expect(response.status).toBe(500);
+      expect(body.errorId).toMatch(/^[0-9a-f-]{36}$/);
+      expect(body.error).toContain(`Reference: ${body.errorId}`);
+      expect(JSON.stringify(body)).not.toContain("synthetic-private-session-detail");
+      expect(log).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(log.mock.calls[0][0])).toMatchObject({
+        errorId: body.errorId,
+        operation: { queue: "kyc.queue.read", detail: "kyc.case.read", mutation: "kyc.case.write" }[operation],
+      });
+    } finally {
+      sessionLookup.mockRestore();
+      log.mockRestore();
+    }
+    expect(await read()).toEqual(before);
+  });
+
   it("allows Viewer reads but denies decisions and assignment", async () => {
     await read("KYC-0001", viewer);
     for (const body of [

@@ -1,6 +1,8 @@
 # Cognition Workspace
 
-A shared internal-tools workspace built with Next.js App Router, TypeScript, Tailwind CSS and actual Be UI source.
+One place for Operations and Compliance teams to find internal tools and complete their daily work. The first tool, KYC Case Review, lets reviewers find cases, assign ownership and record decisions with a shared history. Business users can request new tools and changes through Devin Cloud, while Engineering maintains the shared foundation and review controls.
+
+Built with Next.js App Router, TypeScript, Tailwind CSS and actual Be UI source.
 
 The shell from [#1](https://github.com/thomaspmach/cognition-prototype/issues/1) and Engineering standards from [#2](https://github.com/thomaspmach/cognition-prototype/issues/2) now host the functional [KYC workflow (#3)](https://github.com/thomaspmach/cognition-prototype/issues/3): authenticated case review with SQLite persistence. All accounts and cases are synthetic. This is a local demonstration, not a production deployment.
 
@@ -119,6 +121,12 @@ npm run test:e2e
 On a Linux machine missing browser system libraries, use `npx playwright install --with-deps chromium` with appropriate OS package permissions. Playwright starts and stops its own production server; port 3100 must be free. Do not run `next dev` and `next build` simultaneously in the same checkout.
 
 The browser suite creates a separate, freshly migrated and seeded SQLite database under `.data` on each run and signs in seeded roles. It covers the workspace regressions, login/logout, search/filters (including country selection and composition when configured), assignment/reassignment, all decisions, persistence after refresh, read-only controls, request recovery and direct HTTP permission/validation/conflict checks. Server integration tests use an in-memory database and additionally inject event-insert failures to prove transaction rollback. HTML reports are generated under `playwright-report`; failure artifacts are in `test-results`. Session state, databases and test/build output are ignored by Git. Test database files are retained locally; do not run concurrent Playwright suites in the same checkout.
+
+### Diagnosing unexpected failures
+
+Unexpected KYC API failures return HTTP 500 with a safe message, an `errorId` and the same reference in `X-Request-ID`. The queue/detail feedback displays the reference; match it to the `unexpected_server_error` JSON entry on the server's stderr. Each entry contains the operation, an allowlisted error type and a recognized SQLite code when available. Raw exception messages/stacks, request headers, session tokens and case data are deliberately excluded; these logs are limited diagnostics, not full tracing or an audit trail.
+
+Missing page sessions still redirect to sign-in. Unexpected session lookup failures are logged with operation `workspace.session.read` and rethrown with only a safe reference. The page error boundary offers **Try again**, which requests fresh server data and resets the failed view without submitting a case mutation. If the failure continues, contact Engineering. The boundary covers pages and the workspace layout beneath the root layout, not failures in the root layout itself.
 
 ## What works
 

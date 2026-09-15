@@ -14,7 +14,7 @@ export function StatusBadge({
   status?: AnimatedBadgeStatus;
 }) {
   return (
-    <AnimatedBadge status={status} size="sm" className="rounded-md font-medium">
+    <AnimatedBadge status={status} size="sm" className="isolate rounded-md font-medium">
       {children}
     </AnimatedBadge>
   );

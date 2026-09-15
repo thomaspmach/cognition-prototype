@@ -22,7 +22,7 @@ KYC has a searchable/filterable queue, case details, assignment and decisions wi
 
 | Component | Contract and purpose |
 | --- | --- |
-| [PageHeader](../components/shared/page-header.tsx) | `eyebrow`, `title`, `description`, optional children |
+| [PageHeader](../components/shared/page-header.tsx) | Title-only heading with `title` and optional children for role badges or actions |
 | [QueueTable](../components/shared/queue-table.tsx) | Generic `TableProps<T>` wrapper; accepts typed columns, data, row identity and table states |
 | [DetailPanel](../components/shared/detail-panel.tsx) | Controlled `open`/`onOpenChange`, title, description and children; drawer with focus containment/return |
 | [StatusBadge](../components/shared/status-badge.tsx) | Text children and optional `AnimatedBadgeStatus` |
@@ -59,6 +59,8 @@ KYC's boundaries:
 - `POST /api/kyc/cases/[id]`: Reviewer session plus same-origin check, strict mutation validation and transactional service.
 - `lib/server/kyc.ts`: rechecks authorization, validates current state and assignee, applies a versioned mutation and event in one immediate SQLite transaction. A unique `(case_id, version)` event constraint reinforces consistency. Conflicts return 409; failed operations do not record successful events.
 - `components/kyc`: shared-component composition, request/error handling and reload after conflicts. A `case` URL parameter keeps the detail panel open through refresh.
+- `lib/server/diagnostics.ts`: safe, structured stderr incidents for unexpected KYC API and page-session failures. API responses carry a matching reference; expected validation/access/conflict errors retain their messages and statuses.
+- `app/error.tsx`: recovery UI for failures beneath the root layout, including workspace-layout session failures. Retry refreshes server data and resets the boundary; it does not replay mutations. See [diagnostics and limits](../README.md#diagnosing-unexpected-failures).
 
 Assignment is nonexclusive operational ownership: any authorized Reviewer can act on any nonterminal case. [README roles/transitions](../README.md#kyc-roles-and-transitions) describes the complete rules. All data is synthetic; history is not a tamper-proof audit system.
 

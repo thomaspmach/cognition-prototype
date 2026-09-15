@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { ToolCatalog } from "@/components/workspace/tool-catalog";
 
 describe("tool catalog", () => {
+  it("keeps accessible search and cards without a visible catalog heading or count badge", () => {
+    render(<ToolCatalog />);
+    expect(screen.getByRole("region", { name: "Internal tools" })).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Find a tool" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Internal tools" })).not.toBeInTheDocument();
+    expect(screen.queryByText("3", { exact: true })).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("3 tools shown");
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(3);
+  });
+
   it("exposes only the KYC foundation as a destination and explains previews", () => {
     render(<ToolCatalog />);
     expect(screen.getAllByRole("link")).toHaveLength(1);

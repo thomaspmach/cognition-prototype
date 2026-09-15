@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Input } from "@/components/motion/input";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ToolIcon } from "@/components/workspace/tool-icon";
-import { availabilityLabels, filterTools, toolRegistry } from "@/lib/tool-registry";
+import { availabilityLabels, filterTools } from "@/lib/tool-registry";
 import { cn } from "@/lib/utils";
 
 export function ToolCatalog() {
@@ -14,14 +14,8 @@ export function ToolCatalog() {
   const tools = filterTools(query);
 
   return (
-    <section aria-labelledby="catalog-title">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <h2 id="catalog-title" className="font-semibold">Internal tools</h2>
-          <span className="rounded-md border bg-card px-1.5 py-0.5 text-[11px] text-muted-foreground">
-            {toolRegistry.length}
-          </span>
-        </div>
+    <section aria-label="Internal tools">
+      <div className="mb-5 flex justify-start">
         <div className="w-full sm:w-64">
           <Input
             label="Find a tool"
@@ -56,7 +50,7 @@ export function ToolCatalog() {
                   {availabilityLabels[tool.availability]}
                 </StatusBadge>
               </div>
-              <h3 id={`tool-${tool.id}`} className="text-base font-semibold tracking-tight">{tool.name}</h3>
+              <h2 id={`tool-${tool.id}`} className="text-base font-semibold tracking-tight">{tool.name}</h2>
               <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{tool.description}</p>
               <dl className="mt-6 space-y-2 border-t pt-4 text-xs">
                 <div className="flex items-center justify-between gap-2">
@@ -92,7 +86,7 @@ export function ToolCatalog() {
       {tools.length === 0 && (
         <div className="rounded-xl border border-dashed py-16 text-center">
           <SearchX aria-hidden="true" className="mx-auto mb-3 size-6 text-muted-foreground" />
-          <h3 className="font-medium">No matching tools</h3>
+          <h2 className="font-medium">No matching tools</h2>
           <p className="mt-1 text-sm text-muted-foreground">Try a tool name or a responsible team.</p>
           <button type="button" onClick={() => setQuery("")} className="mt-4 rounded-md px-3 py-2 font-medium text-primary hover:bg-primary/5">
             Clear search

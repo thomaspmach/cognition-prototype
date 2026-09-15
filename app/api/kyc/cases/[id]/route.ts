@@ -11,7 +11,7 @@ export async function GET(request: Request, context: Context) {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    return errorResponse(error);
+    return errorResponse(error, "kyc.case.read");
   }
 }
 
@@ -22,6 +22,6 @@ export async function POST(request: Request, context: Context) {
     const { id } = await context.params;
     return Response.json(await mutateCase(request.headers, id, await request.json()));
   } catch (error) {
-    return errorResponse(error);
+    return errorResponse(error, "kyc.case.write");
   }
 }
