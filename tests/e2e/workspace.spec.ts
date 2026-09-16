@@ -131,7 +131,7 @@ test("shared navigation persists between Overview and KYC", async ({ page }) => 
   await expect(page.getByRole("region", { name: "Onboarding queue" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Onboarding queue" })).toHaveCount(0);
   await expect(page.getByText("Oldest submissions first · Synthetic data", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Refresh queue" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Refresh", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Open KYC-0001" })).toBeVisible();
   await expect(page.getByRole("button", { name: /assign|approve|reject|escalate/i })).toHaveCount(0);
   await nav.getByRole("link", { name: "Overview" }).click();
@@ -147,6 +147,11 @@ test("catalog search aligns left with the Overview title", async ({ page }) => {
   expect(search!.x).toBeCloseTo(title!.x, 0);
   expect(search!.y).toBeGreaterThan(title!.y + title!.height);
   expect(search!.width).toBe(256);
+  expect(search!.height).toBe(44);
+  await expect(page.getByRole("textbox", { name: "Find a tool" })).toHaveCSS("font-size", "16px");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("textbox", { name: "Find a tool" })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test("preview entries cannot navigate, including guessed direct URLs", async ({ page }) => {
@@ -316,13 +321,13 @@ test("laptop layout contains table overflow and respects reduced motion", async 
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
   await page.getByRole("link", { name: "Open KYC Case Review" }).click();
-  await expect(page.getByRole("button", { name: "Refresh queue" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Refresh", exact: true })).toBeInViewport();
   await page.setViewportSize({ width: 1024, height: 768 });
   const tableScroller = page.locator("table").locator("..");
   expect(await tableScroller.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.getByRole("link", { name: "Overview", exact: true })).toBeInViewport();
-  await expect(page.getByRole("button", { name: "Refresh queue" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Refresh", exact: true })).toBeInViewport();
 });
 
 test("mobile navigation opens, closes and restores focus", async ({ page }) => {

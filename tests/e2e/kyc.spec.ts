@@ -45,7 +45,7 @@ test("refresh sits to the right of the filters and wraps without overflow", asyn
   const search = page.getByRole("textbox", { name: "Search customers" });
   const selects = page.getByRole("combobox");
   const lastInput = await selects.count() ? selects.last() : search;
-  const refresh = page.getByRole("button", { name: "Refresh queue", exact: true });
+  const refresh = page.getByRole("button", { name: "Refresh", exact: true });
   for (const width of [1280, 1600]) {
     await page.setViewportSize({ width, height: 900 });
     const fieldBounds = await search.locator("..").boundingBox();
@@ -122,6 +122,80 @@ test("filter placeholders match search and selected values remain readable", asy
 test.describe("Reviewer workflow", () => {
   test.use({ storageState: ".data/e2e/alex.json" });
 
+  test("assignment help is optional and final-decision guidance is contextual", async ({ page }) => {
+    await page.goto("/tools/kyc?case=KYC-0002");
+    const panel = page.getByRole("dialog", { name: "KYC-0002" });
+    const help = panel.getByRole("button", { name: "About reviewer assignment" });
+    const explanation = panel.getByRole("tooltip");
+    await expect(explanation).toHaveCount(0);
+    const assignmentOffset = () => panel.getByLabel("Assign to").evaluate((element) => {
+      // Compare layout within the section, independent of hover-triggered scrolling.
+      return element.getBoundingClientRect().top - element.closest("section")!.getBoundingClientRect().top;
+    });
+    const beforeHelp = await assignmentOffset();
+    await help.hover();
+    await expect(explanation).toBeVisible();
+    expect(await assignmentOffset()).toBeCloseTo(beforeHelp, 1);
+    await explanation.hover();
+    await expect(explanation).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(explanation).toHaveCount(0);
+    await expect(panel).toBeVisible();
+    await help.focus();
+    await expect(explanation).toBeVisible();
+    await expect(help).toHaveAccessibleDescription("Any authorized Reviewer can act, regardless of the assignee.");
+    await page.keyboard.press("Escape");
+    await expect(explanation).toHaveCount(0);
+    await expect(panel).toBeVisible();
+    const decision = panel.getByRole("combobox", { name: "Decision", exact: true });
+    const warning = panel.getByText("This decision is final.");
+    await expect(warning).toHaveCount(0);
+    for (const status of ["approved", "rejected"]) {
+      await decision.selectOption(status);
+      await expect(warning).toBeVisible();
+      await expect(decision).toHaveAccessibleDescription("This decision is final.");
+    }
+    await decision.selectOption("escalated");
+    await expect(warning).toHaveCount(0);
+    await expect(decision).not.toHaveAttribute("aria-describedby");
+  });
+
+  test("drawer keeps identity fixed, fits mobile and requires an explicit decision", async ({ page }) => {
+    await page.goto("/tools/kyc?case=KYC-0002");
+    const panel = page.getByRole("dialog", { name: "KYC-0002" });
+    const heading = panel.getByRole("heading", { name: "Jordan Ellis" });
+    await expect(heading).toBeVisible();
+    await expect(panel.getByText("KYC-0002", { exact: true })).toBeVisible();
+    await expect(panel.getByText("Synthetic case")).toHaveCount(0);
+    await expect(panel.getByRole("combobox", { name: "Decision", exact: true })).toHaveValue("");
+    await expect(panel.getByRole("button", { name: "Save decision" })).toBeDisabled();
+    for (const width of [1400, 390]) {
+      await page.setViewportSize({ width, height: 600 });
+      const bounds = await panel.boundingBox();
+      expect(bounds!.width).toBeCloseTo(Math.min(width, 700), 1);
+      for (const name of ["Assign to", "Decision"]) {
+        const select = panel.getByRole("combobox", { name, exact: true });
+        const chevron = select.locator("..").locator("svg");
+        await expect(select).toHaveCSS("appearance", "none");
+        await expect(select).toHaveCSS("padding-right", "40px");
+        await expect(chevron).toHaveCSS("pointer-events", "none");
+        const inset = await select.evaluate((element) => {
+          // Measure both in one frame while the drawer may still be animating.
+          const field = element.getBoundingClientRect();
+          const icon = element.parentElement!.querySelector("svg")!.getBoundingClientRect();
+          return field.right - icon.right;
+        });
+        expect(inset).toBeCloseTo(12, 0);
+      }
+      const headerTop = (await heading.boundingBox())!.y;
+      await panel.getByRole("heading", { name: "Activity" }).scrollIntoViewIfNeeded();
+      await expect(heading).toBeInViewport();
+      expect((await heading.boundingBox())!.y).toBe(headerTop);
+      expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+  });
+
   test("assign, reassign and decide with nonexclusive ownership; refresh preserves history", async ({ page }) => {
     await page.goto("/tools/kyc");
     await page.getByRole("button", { name: "Open KYC-0001" }).click();
@@ -132,6 +206,8 @@ test.describe("Reviewer workflow", () => {
     await panel.getByLabel("Assign to").selectOption("reviewer-sam");
     await panel.getByRole("button", { name: "Reassign", exact: true }).click();
     await expect(panel.getByText("Alex Chen → Sam Rivera")).toBeVisible();
+    await expect(panel.getByRole("button", { name: "Save decision" })).toBeDisabled();
+    await panel.getByRole("combobox", { name: "Decision", exact: true }).selectOption("approved");
     await panel.getByLabel("Reason (optional)").fill("Synthetic review complete.");
     await panel.getByRole("button", { name: "Save decision" }).click();
     await expect(panel.getByText("Pending → Approved")).toBeVisible();
@@ -139,6 +215,8 @@ test.describe("Reviewer workflow", () => {
     await expect(panel.getByText("This case is approved and read-only.")).toBeVisible();
     await expect(panel.getByText("Pending → Approved")).toBeVisible();
     await expect(panel.getByRole("listitem")).toHaveCount(3);
+    await expect(panel.getByRole("listitem").first()).toContainText("Pending → Approved");
+    await expect(panel.getByRole("listitem").last()).toContainText("Unassigned → Alex Chen");
     await expect(panel.getByRole("button", { name: /assign|save decision/i })).toHaveCount(0);
     await expect(panel.getByRole("combobox", { name: "Decision", exact: true })).toHaveCount(0);
     await page.screenshot({ path: ".data/e2e/history.png", fullPage: true });
@@ -165,7 +243,10 @@ test.describe("Reviewer workflow", () => {
     await panel.getByRole("combobox", { name: "Decision", exact: true }).selectOption("escalated");
     await panel.getByRole("button", { name: "Save decision" }).click();
     await expect(panel.getByText("Pending → Escalated")).toBeVisible();
-    await expect(panel.getByRole("combobox", { name: "Decision", exact: true }).locator("option")).toHaveCount(2);
+    await expect(panel.getByRole("combobox", { name: "Decision", exact: true }).locator("option")).toHaveCount(3);
+    await expect(panel.getByRole("combobox", { name: "Decision", exact: true })).toHaveValue("");
+    await expect(panel.getByRole("button", { name: "Save decision" })).toBeDisabled();
+    await panel.getByRole("combobox", { name: "Decision", exact: true }).selectOption("approved");
     await panel.getByRole("button", { name: "Save decision" }).click();
     await expect(panel.getByText("Escalated → Approved")).toBeVisible();
   });
@@ -270,7 +351,7 @@ test("queue and detail request failures can be retried", async ({ page }) => {
   await expect(feedback).toContainText("Queue unavailable");
   await expect(feedback).toContainText(`Reference: ${errorId}`);
   await page.unroute("**/api/kyc/cases?*");
-  await page.getByRole("button", { name: "Refresh queue" }).click();
+  await page.getByRole("button", { name: "Refresh", exact: true }).click();
   await expect(page.getByRole("button", { name: "Open KYC-0002" })).toBeVisible();
   await page.route("**/api/kyc/cases/KYC-0002", (route) => route.fulfill({
     status: 403, json: { error: "Access denied for this test." },

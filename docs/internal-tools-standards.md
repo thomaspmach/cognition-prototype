@@ -1,6 +1,6 @@
 # Internal-tool standards
 
-These are Engineering guidance. [Security](security.md) identifies which protections have executable enforcement and which remain requirements. [Architecture](architecture.md) owns extension paths and components; [DESIGN.md](../DESIGN.md) owns visual conventions. The [epic](https://github.com/thomaspmach/cognition-prototype/issues/7) and requested issue own product scope.
+These are Engineering guidance. [Security](security.md) identifies which protections have executable enforcement and which remain requirements. [Architecture](architecture.md) owns extension paths and components; [DESIGN.md](../DESIGN.md) owns visual conventions. The confirmed request and its acceptance criteria define the scope of each tool or change.
 
 ## Discovery and specification
 
@@ -52,4 +52,4 @@ Preserve keyboard access, visible focus, focus containment/return, reduced motio
 - The PR reports behavior and each acceptance criterion with **Passed**, **Failed**, or **Not verified**, verification method and supporting results. Split present checks from future integration checks; a file's existence or a written rule is not behavioral evidence.
 - Deliver the PR for the required review under the [merge boundary](security.md#review-and-merge-boundary). Do not represent a local pull/restart as automatic production deployment.
 
-For issue #2, source/reference audits and procedural walkthroughs establish the initial documentation's consistency. A walkthrough must be labeled as such. End-to-end use of these skills in Devin Cloud is tracked in [issue #5](https://github.com/thomaspmach/cognition-prototype/issues/5), including guided creation during #3; it cannot be inferred from a successful build or skill discovery.
+Label procedural walkthroughs as such. A successful build or skill discovery does not establish an end-to-end Devin Cloud workflow; that requires session-specific evidence. The repository's historical examples are linked from the [README](../README.md#engineering-guidance-and-devin-cloud-skills).

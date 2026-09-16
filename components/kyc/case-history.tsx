@@ -3,12 +3,11 @@ import { statusLabels, type CaseEvent } from "@/lib/kyc/model";
 export function CaseHistory({ events }: { events: CaseEvent[] }) {
   return (
     <section className="mt-6 border-t pt-6" aria-labelledby="history-title">
-      <h3 id="history-title" className="font-semibold">Case history</h3>
-      <p className="mt-1 text-xs text-muted-foreground">Oldest first · All times UTC</p>
+      <h3 id="history-title" className="text-sm font-semibold">Activity</h3>
       {events.length === 0 ? <p className="mt-4 text-sm text-muted-foreground">No review events yet.</p> : (
         <ol className="mt-4 space-y-4">
-          {events.map((event) => (
-            <li key={event.id} className="border-l-2 pl-4 text-sm">
+          {[...events].reverse().map((event) => (
+            <li key={event.id} className="border-l-2 border-border pl-4 text-sm">
               <p className="font-medium">
                 {event.kind === "assignment"
                   ? `${event.fromAssigneeName || "Unassigned"} → ${event.toAssigneeName || "Unassigned"}`

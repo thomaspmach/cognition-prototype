@@ -106,7 +106,7 @@ describe("configured queue composition", () => {
     await screen.findByText("Queue unavailable");
     expect(screen.getByRole("status")).not.toHaveClass("sr-only");
     expect(screen.getByRole("alert")).toHaveTextContent("Connection failed");
-    expect(screen.getByRole("button", { name: "Refresh queue" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Refresh" })).toBeEnabled();
   });
 
   it("reorders all columns, pages every record and retains identity, status and opening actions", async () => {
@@ -116,7 +116,7 @@ describe("configured queue composition", () => {
     expect(screen.queryByRole("heading", { name: "Onboarding queue" })).not.toBeInTheDocument();
     expect(screen.queryByText("Oldest submissions first · Synthetic data")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Onboarding queue" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Refresh queue" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Refresh" })).toBeEnabled();
     expect(screen.getAllByRole("columnheader").map((header) => header.textContent))
       .toEqual(["Submitted (UTC)", "Assignee", "Status", "Country", "Customer", "Case"]);
     expect(screen.getAllByRole("columnheader").map((header) => header.style.width))

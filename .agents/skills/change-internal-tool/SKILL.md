@@ -13,7 +13,7 @@ Read [AGENTS.md](../../../AGENTS.md), its required references and any supplied i
 
 Trace the named tool through the shared registry to its route, UI, tests and any server/data code. Use [architecture](../../../docs/architecture.md) to find reusable components and supported capabilities. Verify their existence and current behavior in source; a future requirement or registry access label is not an implemented capability.
 
-For example, KYC supports country filtering, enabled by the configuration-only change in issue #5. Its only pre-authorized surface is [presentation.json](../../../lib/kyc/presentation.json), validated by [presentation-schema.ts](../../../lib/kyc/presentation-schema.ts). Inspect the current value and supported UI capability before changing it; the requested outcome may already be implemented. The contract allows supported filters, a permutation of all six required columns and page sizes 10/25/50.
+Inspect supported configuration before writing new code; the requested outcome may already be available. Approved configuration surfaces are tool-specific. This repository's current contract and its limits are documented in [merge controls](../../../docs/merge-controls.md#configuration-contract); do not assume the same exception exists for another tool.
 
 ## 2. Establish the implementation boundary
 
@@ -21,7 +21,7 @@ Summarize the intended behavior and acceptance examples. Reuse an existing suppo
 
 Read the [review and merge boundary](../../../docs/security.md#review-and-merge-boundary). Locate the actual approved configuration contract and independent gate if implemented; do not invent their paths or trust a risk label. When they are absent or unverifiable, retain human review and report that eligibility for any exception has not been established.
 
-For KYC, inspect the [main-sourced policy workflow](../../../.github/workflows/kyc-policy.yml), [CODEOWNERS](../../../.github/CODEOWNERS) and actual GitHub ruleset/check state described in [activation](../../../docs/merge-controls.md). Native Code Owner review enforces outside-scope approval; classification text does not. This prototype trusts repository writers not to forge checks; never claim App-backed spoof resistance. A workflow file alone does not demonstrate activation.
+Use the [merge-control reference](../../../docs/merge-controls.md) to locate the current workflow, configuration contract and ownership rules, then inspect actual GitHub checks and review state. Classification text does not supply approval. Native review has an observed owner-authored exception, and the prototype trusts repository writers not to forge checks. Do not claim universal independent review or App-backed spoof resistance.
 
 ## 3. Implement and verify
 
@@ -39,6 +39,6 @@ Preserve independent checks and human-review requirements. Passing ordinary test
 
 ## 5. Deliver the PR and stop
 
-Open a PR referencing the issue, with the implemented outcome, complete change boundary, per-criterion **Passed**, **Failed**, or **Not verified** status/evidence, and unresolved dependencies. State which controls/checks actually ran and which integration results remain unverified.
+Open a PR describing the request, implemented outcome, complete change boundary, per-criterion **Passed**, **Failed**, or **Not verified** status/evidence, and unresolved dependencies. Link a relevant issue when one exists. State which controls/checks actually ran and which integration results remain unverified.
 
 Explain the PR and any blockers without requiring source-file knowledge from the requester. Stop for review; do not push directly to main or merge. Once an independent gate exists, any later authorized merge must use its verified mechanism; this skill never grants permission or bypasses it. Local execution/restart is not automatic production publication.

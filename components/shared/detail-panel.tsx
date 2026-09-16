@@ -10,20 +10,25 @@ export function DetailPanel({
   onOpenChange,
   title,
   description,
+  ariaLabel,
+  badge,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
+  ariaLabel?: string;
+  badge?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
-      ariaLabel={title}
-      className="w-[440px] max-w-[100vw] border-l bg-card shadow-xl"
+      ariaLabel={ariaLabel || title}
+      className="w-[700px] max-w-[100vw] border-l bg-card shadow-xl"
+      backdropClassName="bg-black/20 backdrop-blur-none"
     >
       <FocusTrap
         active={open}
@@ -33,11 +38,14 @@ export function DetailPanel({
           returnFocusOnDeactivate: true,
         }}
       >
-        <div className="flex h-full flex-col overflow-y-auto">
-          <header className="flex items-start justify-between gap-4 border-b p-6">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        <div className="flex h-full min-h-0 flex-col">
+          <header className="flex shrink-0 items-start justify-between gap-4 border-b p-6">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="break-words text-lg font-semibold tracking-tight">{title}</h2>
+                {badge}
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{description}</p>
             </div>
             <button
               type="button"
@@ -45,10 +53,10 @@ export function DetailPanel({
               onClick={() => onOpenChange(false)}
               className="grid size-9 shrink-0 place-items-center rounded-lg hover:bg-muted"
             >
-              <X aria-hidden="true" className="size-4" />
+              <X aria-hidden="true" className="size-5" />
             </button>
           </header>
-          <div className="p-6">{children}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">{children}</div>
         </div>
       </FocusTrap>
     </Drawer>
