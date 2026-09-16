@@ -138,8 +138,8 @@ function SidebarNavigation({ actor }: { actor: WorkspaceActor }) {
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-2 group-data-[state=collapsed]/sidebar:grid-cols-1 group-data-[state=collapsed]/sidebar:px-0">
           <Circle aria-hidden="true" className="size-3 shrink-0 text-ring group-data-[state=collapsed]/sidebar:hidden" />
           <div className="min-w-0 group-data-[state=collapsed]/sidebar:hidden">
-            <p className="truncate text-xs font-medium text-sidebar-foreground">{actor.name}</p>
-            <p className="text-[11px] text-sidebar-muted capitalize">{actor.role}</p>
+            <p className="truncate text-sm font-medium text-sidebar-foreground">{actor.name}</p>
+            <p className="text-xs text-sidebar-muted capitalize">{actor.role}</p>
           </div>
           <AccountMenu />
         </div>

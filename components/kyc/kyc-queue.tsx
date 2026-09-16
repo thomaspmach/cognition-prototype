@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type MouseEvent } from "react";
 import type { TableColumn } from "@/components/motion/table";
 import { ActionButton } from "@/components/shared/action-button";
-import { DetailPanel } from "@/components/shared/detail-panel";
 import { Feedback } from "@/components/shared/feedback";
 import { QueueTable } from "@/components/shared/queue-table";
 import { kycRequest } from "@/lib/kyc/client";
@@ -87,13 +86,13 @@ export function KycQueue({ role }: { role: "viewer" | "reviewer" }) {
     <section className="mt-8" aria-label="Onboarding queue">
       <QueueFilters values={filters} onChange={setFilters} reviewers={data.reviewers} countries={data.countries}>
         <ActionButton onClick={() => setReload((value) => value + 1)} disabled={loading}
-          className="ml-auto h-11 shrink-0">Refresh queue</ActionButton>
+          className="ml-auto h-11 shrink-0">Refresh</ActionButton>
       </QueueFilters>
       <div className="my-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <p role="status" className={!loading && !error ? "sr-only" : undefined}>{loading ? "Loading cases…" : error ? "Queue unavailable" : `${data.cases.length} matching cases`}</p>
         {query && <button className="ml-auto rounded text-primary hover:underline" onClick={() => setFilters(emptyFilters)}>Clear filters</button>}
       </div>
-      {error ? <Feedback tone="error">{error} Use Refresh queue to retry.</Feedback> : (
+      {error ? <Feedback tone="error">{error} Use Refresh to retry.</Feedback> : (
         <div onClick={openRow} className="[&_tbody_tr:has([data-case-action])]:cursor-pointer">
           <QueueTable<CaseRecord> data={visibleCases} columns={columns} getRowId={(record) => record.id}
             loading={loading} minColumnWidth={150} rowHeight={64} height={460} emptyState={
@@ -114,12 +113,9 @@ export function KycQueue({ role }: { role: "viewer" | "reviewer" }) {
             disabled={loading || page + 1 >= pageCount} onClick={() => setPage((value) => value + 1)}>Next page</button>
         </div>
       </nav>}
-      <DetailPanel open={Boolean(selectedId)} onOpenChange={(open) => {
-        if (!open) router.replace("/tools/kyc", { scroll: false });
-      }} title={selectedId || "Case details"} description="Onboarding review · Synthetic case">
-        {selectedId && <CaseDetail key={selectedId} id={selectedId} reviewers={data.reviewers} role={role}
-          onChanged={() => setReload((value) => value + 1)} />}
-      </DetailPanel>
+      <CaseDetail id={selectedId} reviewers={data.reviewers} role={role}
+        onClose={() => router.replace("/tools/kyc", { scroll: false })}
+        onChanged={() => setReload((value) => value + 1)} />
     </section>
   );
 }
