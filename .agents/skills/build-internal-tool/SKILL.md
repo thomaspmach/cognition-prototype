@@ -9,7 +9,7 @@ Use this procedure for creating a tool. It runs independently of the change skil
 
 ## 1. Understand the request
 
-Read [AGENTS.md](../../../AGENTS.md), its required references and the requested issue. Use the linked epic for scope without expanding the task to other issues. Inspect the current checkout; documentation describing future work is not proof that a capability exists.
+Read [AGENTS.md](../../../AGENTS.md), its required references and any specification supplied with the request. Inspect the current checkout; documentation describing future work is not proof that a capability exists.
 
 Start from the user's business need, even a sentence such as “We need a queue to review requests and assign an owner.” Do not demand source paths, a technical PRD or an implementation plan. Use [discovery topics](../../../docs/internal-tools-standards.md#discovery-and-specification) to identify what is already answered and what is missing.
 
@@ -37,6 +37,6 @@ Report every criterion as **Passed**, **Failed**, or **Not verified**, with how 
 
 ## 5. Deliver for human review
 
-Review the complete diff, then open a PR referencing the issue and describing implemented behavior, validation and unresolved dependencies. All new tools require human Engineering review; identify appropriate owners for new integrations or sensitive rules under the [review boundary](../../../docs/security.md#review-and-merge-boundary).
+Review the complete diff, then open a PR describing the confirmed request, implemented behavior, validation and unresolved dependencies. Link a relevant issue when one exists. All new tools require human Engineering review; identify appropriate owners for new integrations or sensitive rules under the [review boundary](../../../docs/security.md#review-and-merge-boundary).
 
 Share the PR and any remaining blockers in language the requester can use to validate the outcome. Stop for review. Do not push directly to main, authorize a merge yourself or imply local execution publishes to production.

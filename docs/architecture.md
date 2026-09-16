@@ -2,7 +2,7 @@
 
 ## Implemented workspace
 
-This is one Next.js App Router application, using TypeScript, Tailwind and actual Be UI source. Issues #1–#2 supply the shared workspace and standards; #3 adds authenticated KYC review. [Epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7) owns product scope.
+This is one Next.js App Router application using TypeScript, Tailwind and actual Be UI source. It contains a shared workspace, Engineering standards and authenticated KYC review as the first functional tool. The [README](../README.md) links the initial project scope and delivery evidence.
 
 | Responsibility | Current implementation |
 | --- | --- |
@@ -34,7 +34,7 @@ Inspect the underlying [table API](../components/motion/table/types.ts) and [sta
 
 ## Adding a tool
 
-Follow the [build skill](../.agents/skills/build-internal-tool/SKILL.md) for intake and confirmation. The following are extension instructions, not additional tools implemented by issue #2.
+Follow the [build skill](../.agents/skills/build-internal-tool/SKILL.md) for intake and confirmation. The following are extension instructions, not a claim that additional tools have already been implemented.
 
 1. **Choose a route and module boundary.** Add an App Router page at `app/(workspace)/tools/<tool-id>/page.tsx`, using KYC as the composition example and calling `requirePageActor()` in the page itself as well as relying on the layout. Route groups do not change the public URL. Keep tool-specific components/rules together, as in `components/kyc` and `lib/kyc`; extract shared code only when it has a real reusable contract.
 2. **Register once.** Extend `ToolId` and add an entry in `lib/tool-registry.ts` with unique id, name, description, responsible team, access requirements and availability. Extend the `icons` mapping in `components/workspace/tool-icon.tsx`. Available/foundation entries require a `/tools/...` route; preview entries must use `route: null`. Do not add placeholder pages for previews.
@@ -64,10 +64,10 @@ KYC's boundaries:
 
 Assignment is nonexclusive operational ownership: any authorized Reviewer can act on any nonterminal case. [README roles/transitions](../README.md#kyc-roles-and-transitions) describes the complete rules. All data is synthetic; history is not a tamper-proof audit system.
 
-`lib/kyc/presentation.json` is the only pre-authorized presentation surface. `presentation.ts` validates the imported value through `presentation-schema.ts`; the trusted merge evaluator also validates raw JSON, byte size and Git mode. The current configuration enables status, assignee and country filters; country was enabled by the configuration-only change in #5. Configuration may choose unique supported filters, reorder all six required columns, and select page sizes 10/25/50. The KYC composition retains its fixed column renderers and pages the authorized returned records; configuration cannot change server authorization, fetching rules or decisions.
+`lib/kyc/presentation.json` is the only pre-authorized presentation surface. `presentation.ts` validates the imported value through `presentation-schema.ts`; the trusted merge evaluator also validates raw JSON, byte size and Git mode. The current configuration enables status, assignee and country filters. Configuration may choose unique supported filters, reorder all six required columns, and select page sizes 10/25/50. The KYC composition retains its fixed column renderers and pages the authorized returned records; configuration cannot change server authorization, fetching rules or decisions.
 
-`scripts/check-kyc-presentation.ts` uses only Node built-ins and the dependency-free schema, so the privileged policy job installs no repository dependencies. TypeScript extension imports are enabled for Node's native type stripping. Its complete-diff classification is explanatory; native required Code Owner review enforces the outside-scope boundary. Owner-applied protections and the limited live evidence are recorded in [merge controls](merge-controls.md); enforcement trusts writers not to spoof checks. See [security](security.md#review-and-merge-boundary).
+`scripts/check-kyc-presentation.ts` uses only Node built-ins and the dependency-free schema, so the privileged policy job installs no repository dependencies. TypeScript extension imports are enabled for Node's native type stripping. Its complete-diff classification is explanatory, not approval. Native Code Owner settings supported the agent-authored reviewed path, but do not universally enforce independent review for owner-authored PRs. Settings, evidence and remaining limits are recorded in [merge controls](merge-controls.md); enforcement also trusts writers not to spoof checks. See [security](security.md#review-and-merge-boundary).
 
 ## Verification boundary
 
-Vitest covers the registry, filters and server integration; Playwright covers login, the workspace, KYC workflows and direct HTTP requests against a production build with a clean database. Failure-injection tests prove atomic case/event rollback. Fresh-session creation/change evidence is recorded separately in [#5's acceptance report](https://github.com/thomaspmach/cognition-prototype/issues/5#issuecomment-5670914659); final clean-checkout setup and integrated verification belong to [#6](https://github.com/thomaspmach/cognition-prototype/issues/6). Tests of the application do not establish GitHub merge enforcement or deployment.
+Vitest covers the registry, filters and server integration; Playwright covers login, the workspace, KYC workflows and direct HTTP requests against a production build with a clean database. Failure-injection tests prove atomic case/event rollback. Historical fresh-session workflow and integrated verification reports are linked from the [README](../README.md#engineering-guidance-and-devin-cloud-skills). Tests of the application do not establish GitHub merge enforcement or deployment.
