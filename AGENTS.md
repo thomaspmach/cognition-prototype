@@ -2,7 +2,6 @@
 
 ## Read first
 
-- Read the requested issue and [parent epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7) for scope and dependencies. Implement only the requested work.
 - Read [architecture](docs/architecture.md), [tool standards](docs/internal-tools-standards.md) and [security](docs/security.md). They distinguish current capabilities from later requirements.
 - Read [DESIGN.md](DESIGN.md) before UI changes. Its implemented tokens and components take precedence over the epic's initial visual direction.
 - For a new tool, use [build-internal-tool](.agents/skills/build-internal-tool/SKILL.md). For changes to an existing tool, use [change-internal-tool](.agents/skills/change-internal-tool/SKILL.md). Use the relevant procedure independently; do not assume simultaneous skill composition.

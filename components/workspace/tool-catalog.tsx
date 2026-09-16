@@ -26,8 +26,7 @@ export function ToolCatalog() {
             reserveErrorLine={false}
             classNames={{
               label: "sr-only",
-              field: "h-9 rounded-lg bg-card",
-              input: "text-sm",
+              field: "rounded-lg bg-card",
             }}
           />
         </div>

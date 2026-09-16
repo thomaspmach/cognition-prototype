@@ -128,10 +128,14 @@ test.describe("Reviewer workflow", () => {
     const help = panel.getByRole("button", { name: "About reviewer assignment" });
     const explanation = panel.getByRole("tooltip");
     await expect(explanation).toHaveCount(0);
-    const assignmentTop = (await panel.getByLabel("Assign to").boundingBox())!.y;
+    const assignmentOffset = () => panel.getByLabel("Assign to").evaluate((element) => {
+      // Compare layout within the section, independent of hover-triggered scrolling.
+      return element.getBoundingClientRect().top - element.closest("section")!.getBoundingClientRect().top;
+    });
+    const beforeHelp = await assignmentOffset();
     await help.hover();
     await expect(explanation).toBeVisible();
-    expect((await panel.getByLabel("Assign to").boundingBox())!.y).toBe(assignmentTop);
+    expect(await assignmentOffset()).toBeCloseTo(beforeHelp, 1);
     await explanation.hover();
     await expect(explanation).toBeVisible();
     await page.keyboard.press("Escape");

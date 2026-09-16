@@ -147,6 +147,11 @@ test("catalog search aligns left with the Overview title", async ({ page }) => {
   expect(search!.x).toBeCloseTo(title!.x, 0);
   expect(search!.y).toBeGreaterThan(title!.y + title!.height);
   expect(search!.width).toBe(256);
+  expect(search!.height).toBe(44);
+  await expect(page.getByRole("textbox", { name: "Find a tool" })).toHaveCSS("font-size", "16px");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("textbox", { name: "Find a tool" })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test("preview entries cannot navigate, including guessed direct URLs", async ({ page }) => {
