@@ -1,6 +1,13 @@
 # Cognition Workspace
 
-A proof of concept for a platform of internal tools built and evolved with **Devin**. Business teams describe what they need in Devin Cloud; Devin implements new tools or changes on a shared workspace foundation and delivers pull requests for review. Engineering maintains the architecture, standards and review controls.
+A proof of concept for a platform of internal tools built and evolved with **Devin**. Business teams describe what they need in Devin Cloud; Devin implements new tools or changes on a shared workspace foundation and delivers pull requests. Engineering maintains the architecture, standards and review controls.
+
+Non-engineers can contribute through Devin without needing Engineering review for every adjustment. Automated policy checks inspect the entire PR to distinguish two paths:
+
+- **Within a pre-approved scope:** valid configuration-only changes to KYC filters, column order or page size can proceed without human review, provided all required checks pass.
+- **Outside that scope:** new tools, application code, permissions, business rules and other changes require authorized non-author Engineering review under the repository policy, as well as passing checks.
+
+The distinction depends on the change, not the requester's technical background. Review exemption does not mean automatic merging; the prototype's [enforcement limits](docs/merge-controls.md#review-policy-and-enforcement-limits) still apply.
 
 The first tool, **KYC Case Review**, demonstrates the approach for Operations and Compliance: finding cases, assigning ownership and recording decisions with a shared history.
 
