@@ -1,6 +1,8 @@
 # Cognition Workspace
 
-One place for Operations and Compliance teams to find internal tools and complete their daily work. The first tool, **KYC Case Review**, lets reviewers find cases, assign ownership and record decisions with a shared history. Business users can request new tools and changes through Devin Cloud, while Engineering maintains the shared foundation and review controls.
+A proof of concept for a platform of internal tools built and evolved with **Devin**. Business teams describe what they need in Devin Cloud; Devin implements new tools or changes on a shared workspace foundation and delivers pull requests for review. Engineering maintains the architecture, standards and review controls.
+
+The first tool, **KYC Case Review**, demonstrates the approach for Operations and Compliance: finding cases, assigning ownership and recording decisions with a shared history.
 
 **This is a local demonstration with synthetic accounts and cases, not a production deployment.**
 
@@ -66,6 +68,8 @@ New tools register once, reuse the shell and shared components, and own their do
 
 ## Run locally
 
+**Full development guide: [docs/development.md](docs/development.md)** — environment settings, commands, tests, database maintenance and troubleshooting.
+
 Use **Node 24.18.1**, **npm 11.11.1** and [NVM](https://github.com/nvm-sh/nvm#installing-and-updating) loaded in your shell. The SQLite source rebuild requires Python 3, make and a C++ compiler. From the repository root:
 
 ```sh
@@ -82,7 +86,7 @@ npm run dev
 
 Open http://localhost:3000. Setup creates an ignored `.env` with a generated session secret; seed reruns preserve existing work. No external service accounts are required.
 
-For environment settings, runtime pin rationale, fresh databases, the full command table, tests and troubleshooting, see the [development guide](docs/development.md). Do not run dev and build simultaneously in the same checkout.
+Do not run dev and build simultaneously in the same checkout.
 
 ### Synthetic sign-in accounts
 
@@ -108,7 +112,7 @@ Choose the relevant skill for the task. These are reusable procedures, not runti
 | Reference | Contents |
 | --- | --- |
 | [Architecture](docs/architecture.md) | Module boundaries, APIs and adding a tool |
-| [Development guide](docs/development.md) | Setup, commands, tests, troubleshooting and project history |
+| [Development guide — `docs/development.md`](docs/development.md) | Setup, commands, tests, troubleshooting and project history |
 | [Engineering entry point](AGENTS.md) | Repository navigation, checks and branch/PR workflow |
 | [Tool standards](docs/internal-tools-standards.md) | Discovery, interaction states and definition of done |
 | [Design system](DESIGN.md) | Shared tokens, components and interaction conventions |
