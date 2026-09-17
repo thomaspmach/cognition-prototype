@@ -4,8 +4,10 @@ A proof of concept for a platform of internal tools built and evolved with **Dev
 
 Non-engineers can contribute through Devin without needing Engineering review for every adjustment. Automated policy checks inspect the entire PR to distinguish two paths:
 
-- **Within a pre-approved scope:** valid configuration-only changes to KYC filters, column order or page size can proceed without human review, provided all required checks pass.
+- **Within a pre-approved scope:** each tool can have a configuration surface explicitly approved by Engineering. Valid changes confined to that surface can proceed without human review, provided all required checks pass.
 - **Outside that scope:** new tools, application code, permissions, business rules and other changes require authorized non-author Engineering review under the repository policy, as well as passing checks.
+
+This model is intended for all current and future tools. KYC filters, column order and page size are the first implemented scope; each future tool needs its own Engineering-approved configuration boundaries and automated validation before qualifying for review exemption.
 
 The distinction depends on the change, not the requester's technical background. Review exemption does not mean automatic merging; the prototype's [enforcement limits](docs/merge-controls.md#review-policy-and-enforcement-limits) still apply.
 
