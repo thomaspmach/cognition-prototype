@@ -49,7 +49,7 @@ Follow the [build skill](../.agents/skills/build-internal-tool/SKILL.md) for int
 
 [Better Auth](../lib/server/auth.ts) uses its Drizzle SQLite adapter with database-backed sessions, email/password login, disabled signup and server-controlled roles. Session lookup is followed by a current database role lookup. The client uses the library's `signIn.email` and `signOut`; `/api/auth/[...all]` delegates to its Next.js handler. Password hashing comes from Better Auth.
 
-`lib/server/database.ts` opens SQLite with foreign keys, WAL and a busy timeout. Drizzle schemas cover users/accounts/sessions/verifications, cases and events. Generated migrations live in `drizzle/`. See [README setup](../README.md#run-locally) for verified environment, migration, seed, sign-in and fresh-database commands.
+`lib/server/database.ts` opens SQLite with foreign keys, WAL and a busy timeout. Drizzle schemas cover users/accounts/sessions/verifications, cases and events. Generated migrations live in `drizzle/`. See the [development guide](development.md#run-locally) for environment, migration, seed and fresh-database commands, and the [README](../README.md#synthetic-sign-in-accounts) for demonstration sign-in accounts.
 
 KYC's boundaries:
 
@@ -60,7 +60,7 @@ KYC's boundaries:
 - `lib/server/kyc.ts`: rechecks authorization, validates current state and assignee, applies a versioned mutation and event in one immediate SQLite transaction. A unique `(case_id, version)` event constraint reinforces consistency. Conflicts return 409; failed operations do not record successful events.
 - `components/kyc`: shared-component composition, request/error handling and reload after conflicts. A `case` URL parameter keeps the detail panel open through refresh.
 - `lib/server/diagnostics.ts`: safe, structured stderr incidents for unexpected KYC API and page-session failures. API responses carry a matching reference; expected validation/access/conflict errors retain their messages and statuses.
-- `app/error.tsx`: recovery UI for failures beneath the root layout, including workspace-layout session failures. Retry refreshes server data and resets the boundary; it does not replay mutations. See [diagnostics and limits](../README.md#diagnosing-unexpected-failures).
+- `app/error.tsx`: recovery UI for failures beneath the root layout, including workspace-layout session failures. Retry refreshes server data and resets the boundary; it does not replay mutations. See [diagnostics and limits](development.md#diagnosing-unexpected-failures).
 
 Assignment is nonexclusive operational ownership: any authorized Reviewer can act on any nonterminal case. [README roles/transitions](../README.md#kyc-roles-and-transitions) describes the complete rules. All data is synthetic; history is not a tamper-proof audit system.
 
@@ -70,4 +70,4 @@ Assignment is nonexclusive operational ownership: any authorized Reviewer can ac
 
 ## Verification boundary
 
-Vitest covers the registry, filters and server integration; Playwright covers login, the workspace, KYC workflows and direct HTTP requests against a production build with a clean database. Failure-injection tests prove atomic case/event rollback. Historical fresh-session workflow and integrated verification reports are linked from the [README](../README.md#engineering-guidance-and-devin-cloud-skills). Tests of the application do not establish GitHub merge enforcement or deployment.
+Vitest covers the registry, filters and server integration; Playwright covers login, the workspace, KYC workflows and direct HTTP requests against a production build with a clean database. Failure-injection tests prove atomic case/event rollback. Historical fresh-session workflow and integrated verification reports are linked from the [development guide](development.md#project-history). Tests of the application do not establish GitHub merge enforcement or deployment.
