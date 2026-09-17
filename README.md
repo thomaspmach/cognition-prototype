@@ -1,14 +1,72 @@
 # Cognition Workspace
 
-One place for Operations and Compliance teams to find internal tools and complete their daily work. The first tool, KYC Case Review, lets reviewers find cases, assign ownership and record decisions with a shared history. Business users can request new tools and changes through Devin Cloud, while Engineering maintains the shared foundation and review controls.
+One place for Operations and Compliance teams to find internal tools and complete their daily work. The first tool, **KYC Case Review**, lets reviewers find cases, assign ownership and record decisions with a shared history. Business users can request new tools and changes through Devin Cloud, while Engineering maintains the shared foundation and review controls.
 
-Built with Next.js App Router, TypeScript, Tailwind CSS and actual Be UI source.
+**This is a local demonstration with synthetic accounts and cases, not a production deployment.**
 
-The shell from [#1](https://github.com/thomaspmach/cognition-prototype/issues/1) and Engineering standards from [#2](https://github.com/thomaspmach/cognition-prototype/issues/2) now host the functional [KYC workflow (#3)](https://github.com/thomaspmach/cognition-prototype/issues/3): authenticated case review with SQLite persistence. All accounts and cases are synthetic. This is a local demonstration, not a production deployment.
+## What works
+
+| Use case | Available today |
+| --- | --- |
+| Find an internal tool | Overview (`/`) with a catalog searchable by name, description or responsible team |
+| Review KYC cases | KYC Case Review (`/tools/kyc`) with customer search, status/assignee/country filters, pagination and case details |
+| Coordinate and record work | Assignment/reassignment, approval, rejection, escalation and persisted newest-first activity |
+| Request a tool or change | Devin Cloud skills that take a business request through discovery, implementation, verification and PR delivery |
+
+Refunds Dashboard and Feature Flag Admin are **Preview only** catalog entries: navigation is disabled and no pages exist.
+
+### KYC review workflow
+
+1. Find a case using search and filters, then open its details.
+2. Assign or reassign operational ownership to a Reviewer.
+3. Record an allowed decision, with a reason when required.
+4. See the saved result and actor-attributed history. If another update wins first, reload the details after the conflict.
+
+Filters compose; **Clear filters** restores the full queue. Selected filters reset on a full page reload. Country is visible in both the queue and details. Risk scores are informational and never trigger decisions.
+
+### KYC roles and transitions
+
+| Role | Permissions |
+| --- | --- |
+| Viewer | Read the workspace, queue, details and history |
+| Reviewer | Also assign/reassign nonterminal cases to an existing Reviewer and record allowed decisions |
+
+Assignment represents operational ownership, **not exclusive permission**. Other authorized Reviewers may act on the case, including making a decision when someone else is assigned.
+
+| Current status | Allowed decisions |
+| --- | --- |
+| Pending | Approve, Reject, Escalate |
+| Escalated | Approve, Reject |
+| Approved / Rejected | None; both decisions and assignment are read-only |
+
+Rejection requires a nonblank reason; approval and escalation accept an optional reason. Every successful write records the authenticated actor, UTC timestamp and old/new state atomically with the case. An expected version rejects stale or repeated writes. History is an application event log, not a tamper-proof audit system.
+
+## Architecture
+
+A single **Next.js App Router** application, built with TypeScript, Tailwind CSS and installed Be UI source. Tools share the workspace foundation while keeping their business rules in tool-specific modules.
+
+| Layer | Responsibility |
+| --- | --- |
+| Workspace shell and registry | Authenticated layout, persistent navigation and catalog; `lib/tool-registry.ts` supplies one typed source of tool metadata |
+| Shared UI | Reusable queue, detail panel, status, action and feedback components, following [DESIGN.md](DESIGN.md) |
+| Tool modules | KYC routes and compositions in `app/` and `components/kyc/`; domain types, validation and presentation in `lib/kyc/` |
+| Server identity and policy | Better Auth database-backed sessions and server-controlled roles; protected reads and writes independently enforce access |
+| Persistence | Drizzle with local SQLite; KYC mutations and history commit in one transaction with version checks |
+
+Registry access labels describe roles; they do not authorize requests. Database and session access stay server-only. The strict KYC presentation configuration controls supported filters, column order and page size (10/25/50), without changing permissions or decision rules.
+
+New tools register once, reuse the shell and shared components, and own their domain behavior. See [architecture and extension points](docs/architecture.md) for the module map, API boundaries and implementation steps.
+
+## Scope and limitations
+
+- All data and sign-in accounts are synthetic. Public signup is disabled.
+- External document verification, sanctions/risk automation, bulk actions, account recovery, production SSO, user administration and production hosting are outside scope. SQLite requires persistent writable storage.
+- Skills deliver PRs, not production deployments or merge permission. Engineering policy requires authorized non-author review outside the approved presentation-only surface.
+- CI, the presentation-policy evaluator and CODEOWNERS are implemented, but independent approval is **not universally enforced** for owner-authored changes. The prototype trusts repository writers not to forge checks; auto-merge remains disabled and the full live enforcement matrix is not demonstrated. See [security](docs/security.md) and [merge controls](docs/merge-controls.md) for evidence and limits.
 
 ## Run locally
 
-Use Node **24.18.1** (`.nvmrc`) and npm **11.11.1** (`packageManager` in `package.json`). Install [NVM](https://github.com/nvm-sh/nvm#installing-and-updating) if needed, load it in your shell, then run from the repository root. In the standard Linux Devin environment, load NVM with `source /home/ubuntu/.nvm/nvm.sh`.
+Use **Node 24.18.1**, **npm 11.11.1** and [NVM](https://github.com/nvm-sh/nvm#installing-and-updating) loaded in your shell. The SQLite source rebuild requires Python 3, make and a C++ compiler. From the repository root:
 
 ```sh
 nvm install
@@ -22,19 +80,9 @@ npm run db:seed
 npm run dev
 ```
 
-Open http://localhost:3000. `setup:local` generates a random session secret into ignored `.env` only when that file does not exist. It preserves existing settings. `.env.example` documents `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` and `SQLITE_PATH`; the default database is `.data/workspace.sqlite`. Run migrations before seeding or starting the application. When changing the host or port, set `BETTER_AUTH_URL` to that exact origin.
+Open http://localhost:3000. Setup creates an ignored `.env` with a generated session secret; seed reruns preserve existing work. No external service accounts are required.
 
-| Variable | Local configuration |
-| --- | --- |
-| `BETTER_AUTH_SECRET` | Generated by `setup:local`; use a random value of at least 32 characters when configuring manually. Never commit or print it. |
-| `BETTER_AUTH_URL` | Exact application origin, normally `http://localhost:3000`; `localhost` and `127.0.0.1` are different origins. |
-| `SQLITE_PATH` | SQLite file, normally `.data/workspace.sqlite`; relative paths are resolved from the repository root when running these commands. |
-
-Exported variables override `.env`. Next loads `.env` for the application; the migration/seed commands explicitly load it with Node. For ad-hoc Node commands needing these settings, use `node --env-file=.env`. No external database account, authentication provider or hosted application URL is needed. Installation downloads public dependencies; application fonts are bundled locally.
-
-The font is bundled locally. `npm ci` uses the committed lockfile; do not mix package managers. npm 11 is pinned because npm 10's dependency resolver crashes on this test dependency tree.
-
-Node 24.18.1 is temporarily pinned to avoid the [native-addon cleanup regression](https://github.com/nodejs/node/issues/65446), pending the [complete upstream fix](https://github.com/nodejs/node/pull/65943). Run the source rebuild after every clean install or Node switch: it replaces cached or downloaded `better-sqlite3` prebuilds with a binary compiled against the selected Node headers. Changing the runtime alone is insufficient. The rebuild requires Python 3, make and a C++ compiler (on Ubuntu: `python3 make g++`); CI performs the same rebuild.
+For environment settings, runtime pin rationale, fresh databases, the full command table, tests and troubleshooting, see the [development guide](docs/development.md). Do not run dev and build simultaneously in the same checkout.
 
 ### Synthetic sign-in accounts
 
@@ -46,176 +94,26 @@ All three local-only accounts use password **`Synthetic-demo-2026!`**:
 | `alex@example.test` | Alex Chen | Reviewer |
 | `sam@example.test` | Sam Rivera | Reviewer |
 
-Better Auth hashes the passwords and manages database-backed sessions. Public signup is disabled. These published demonstration credentials must never be reused with real data or an internet-facing production deployment.
-
-### Data setup and repeatability
-
-Drizzle migrations are committed under `drizzle/`; `npm run db:generate` generates a migration after schema changes. `db:migrate` applies only unapplied migrations. `db:seed` inserts missing synthetic accounts and cases: a fresh database contains three accounts, twelve cases and three initial decision events. Reruns preserve existing password hashes, assignments, decisions and events; they do not reset previous work or repair manually edited records/history.
-
-For an explicitly fresh demonstration database, stop the application and choose a **new** path in the same shell:
-
-```sh
-export SQLITE_PATH=".data/fresh-$(date +%s).sqlite"
-npm run db:migrate
-npm run db:seed
-npm run dev
-```
-
-This leaves the previous database intact. Keep using that exported path, or set it in `.env`, to reopen the new database later. SQLite requires a persistent writable disk; serverless durability, backups and deployment are outside this prototype.
-
-#### Explicit reset of a disposable database
-
-**This deletes all accounts, sessions, cases and history in the selected database.** Prefer the new-path procedure above. Before deleting anything, stop every process using that database and preserve any data you need. Verify the selected path belongs to your disposable demonstration, not another checkout or an existing user database. Do not remove `.env`.
-
-In the same shell where you selected that disposable `SQLITE_PATH`:
-
-```sh
-: "${SQLITE_PATH:?Select the disposable database path before resetting}"
-printf 'Permanently reset %s? Type RESET: ' "$SQLITE_PATH"
-read -r confirmation
-if [ "$confirmation" = "RESET" ]; then
-  rm -f -- "$SQLITE_PATH" "${SQLITE_PATH}-wal" "${SQLITE_PATH}-shm"
-  npm run db:migrate && npm run db:seed
-fi
-```
-
-The exact SQLite file and its WAL/shared-memory companions are removed; no directory or wildcard deletion is needed. Migrate and seed recreate the initial synthetic state, and old sessions no longer authenticate. Restart with the same selected path and sign in again.
-
-### Production build for local use
-
-To run a production build:
-
-```sh
-npm run build
-npm run start
-```
-
-## Commands and checks
-
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Next development server on port 3000 |
-| `npm run lint` | ESLint with no warnings allowed |
-| `npm run typecheck` | Generate Next route types, then TypeScript checks |
-| `npm test` | Vitest UI/registry tests, then server integration tests |
-| `npm run test:server` | Migrations, seeded auth, permissions, transitions, filters, atomicity and conflicts |
-| `npm run test:watch` | Vitest watch mode |
-| `npm run check` | Lint, typecheck and Vitest unit/component/policy/server tests |
-| `npm run build` | Production compilation and static route generation |
-| `npm run start` | Serve the production build |
-| `npm run test:e2e` | Playwright tests against a production server on port 3100 |
-| `npm run setup:local` | Create local environment with a random session secret if absent |
-| `npm run db:generate` | Generate Drizzle migrations from the schema |
-| `npm run db:migrate` | Apply committed migrations to the selected SQLite database |
-| `npm run db:seed` | Insert missing synthetic data without resetting existing work |
-
-For browser checks after installation:
-
-```sh
-npx playwright install chromium
-npm run check
-npm run build
-npm run test:e2e
-```
-
-On a Linux machine missing browser system libraries, use `npx playwright install --with-deps chromium` with appropriate OS package permissions. Playwright starts and stops its own production server; port 3100 must be free. Do not run `next dev` and `next build` simultaneously in the same checkout.
-
-The browser suite creates a separate, freshly migrated and seeded SQLite database under `.data` on each run and signs in seeded roles. It covers the workspace regressions, login/logout, search/filters (including country selection and composition when configured), assignment/reassignment, all decisions, persistence after refresh, read-only controls, request recovery and direct HTTP permission/validation/conflict checks. Server integration tests use an in-memory database and additionally inject event-insert failures to prove transaction rollback. HTML reports are generated under `playwright-report`; failure artifacts are in `test-results`. Session state, databases and test/build output are ignored by Git. Test database files are retained locally; do not run concurrent Playwright suites in the same checkout.
-
-### Diagnosing unexpected failures
-
-Unexpected KYC API failures return HTTP 500 with a safe message, an `errorId` and the same reference in `X-Request-ID`. The queue/detail feedback displays the reference; match it to the `unexpected_server_error` JSON entry on the server's stderr. Each entry contains the operation, an allowlisted error type and a recognized SQLite code when available. Raw exception messages/stacks, request headers, session tokens and case data are deliberately excluded; these logs are limited diagnostics, not full tracing or an audit trail.
-
-Missing page sessions still redirect to sign-in. Unexpected session lookup failures are logged with operation `workspace.session.read` and rethrown with only a safe reference. The page error boundary offers **Try again**, which requests fresh server data and resets the failed view without submitting a case mutation. If the failure continues, contact Engineering. The boundary covers pages and the workspace layout beneath the root layout, not failures in the root layout itself.
-
-## What works
-
-- **Overview (`/`):** catalog driven by one typed registry; searchable by name, description or responsible team.
-- **KYC Case Review (`/tools/kyc`):** customer search, configured filters, paginated cases, case details, assignment/reassignment, decisions and newest-first activity. Country is visible in the queue and details; status, assignee and country filters are enabled in `lib/kyc/presentation.json`. The strict configuration also controls column order and page size (10/25/50), preserving every identity/status/action column. Filters compose; “Clear filters” restores the full queue. Selected filters reset on a full page reload.
-- **Refunds Dashboard and Feature Flag Admin:** visible **Preview only** entries with disabled navigation, no links and no pages.
-
-Workspace pages and data endpoints require a server-verifiable session. Registry access metadata describes roles; the server helpers enforce them.
-
-### KYC roles and transitions
-
-| Role | Permissions |
-| --- | --- |
-| Viewer | Read the workspace, queue, details and history |
-| Reviewer | Also assign/reassign nonterminal cases to an existing Reviewer and record allowed decisions |
-
-**Assignment represents operational ownership, not exclusive permission. Other authorized Reviewers may act on the case**, including making a decision when someone else is assigned.
-
-| Current status | Allowed decisions |
-| --- | --- |
-| Pending | Approve, Reject, Escalate |
-| Escalated | Approve, Reject |
-| Approved / Rejected | None; both decisions and assignment are read-only |
-
-Rejection requires a nonblank reason; approval and escalation accept an optional reason. Risk scores are informational and never trigger decisions. Every successful write stores the authenticated actor, UTC timestamp and old/new state in history, atomically with the case. An expected version rejects stale or repeated writes; reload details after a conflict. History is an application event log, not a tamper-proof audit system.
-
-External document verification/providers, sanctions/risk automation, bulk actions, signup/recovery, production SSO, user administration and production hosting are outside scope. The presentation contract, policy evaluator, CI and CODEOWNERS are implemented. Historical configuration-only and agent-authored reviewed merges are documented in [merge controls](docs/merge-controls.md). The full live matrix and automatic merge completion have not been demonstrated. Repository auto-merge remains disabled. Owner-authored changes have been reported mergeable without formal review, so the setup does not universally enforce independent approval. It also trusts writers not to forge checks and is not equivalent to spoof-resistant App-backed enforcement.
-
-Next's automatic agent-instruction generation is disabled (`agentRules: false`); the project maintains its own [AGENTS.md](AGENTS.md).
+Better Auth hashes passwords and manages database-backed sessions. **Never reuse these published credentials with real data or an internet-facing production deployment.**
 
 ## Engineering guidance and Devin Cloud skills
 
-Start with [AGENTS.md](AGENTS.md) for commands, module navigation and branch/PR practice. Read [architecture](docs/architecture.md) for extension steps, [tool standards](docs/internal-tools-standards.md) for discovery and completion criteria, [security](docs/security.md) for control boundaries, and [DESIGN.md](DESIGN.md) before UI changes.
+Describe the business outcome and acceptance examples in Devin Cloud; no source paths or technical PRD are required:
 
-Use the two repository skills for separate tasks:
+- **New tool:** `@skills:build-internal-tool` — [discovery, confirmed specification, implementation and PR](.agents/skills/build-internal-tool/SKILL.md).
+- **Existing tool:** `@skills:change-internal-tool` — [locate the relevant capabilities, implement, verify and deliver a PR](.agents/skills/change-internal-tool/SKILL.md).
 
-- [build-internal-tool](.agents/skills/build-internal-tool/SKILL.md): turn a business need into a confirmed specification, then implementation and a PR.
-- [change-internal-tool](.agents/skills/change-internal-tool/SKILL.md): describe an outcome for an existing tool; Devin locates the relevant code/capabilities, verifies the change and delivers a PR.
+Choose the relevant skill for the task. These are reusable procedures, not runtime or merge enforcement. See the [session setup guide](docs/development.md#preparing-a-fresh-devin-cloud-session) and [historical workflow evidence](docs/development.md#project-history).
 
-In Devin Cloud, include `@skills:build-internal-tool` or `@skills:change-internal-tool` with the business request. No source paths or technical PRD are required from the requester. [Cloud Skills documentation](https://docs.devin.ai/product-guides/skills) describes discovery, invocation and supported format. Each skill lives under `.agents/skills/<skill-name>/SKILL.md` with YAML `name` and `description`; choose one rather than assuming simultaneous active skills.
+| Reference | Contents |
+| --- | --- |
+| [Architecture](docs/architecture.md) | Module boundaries, APIs and adding a tool |
+| [Development guide](docs/development.md) | Setup, commands, tests, troubleshooting and project history |
+| [Engineering entry point](AGENTS.md) | Repository navigation, checks and branch/PR workflow |
+| [Tool standards](docs/internal-tools-standards.md) | Discovery, interaction states and definition of done |
+| [Design system](DESIGN.md) | Shared tokens, components and interaction conventions |
+| [Security](docs/security.md) / [merge controls](docs/merge-controls.md) | Access requirements, review policy, enforcement evidence and gaps |
 
-These are reusable procedures, not runtime or merge enforcement. The only pre-authorized configuration surface and actual GitHub enforcement limits are described in [merge controls](docs/merge-controls.md). Engineering policy calls for authorized non-author human review outside that surface; GitHub does not enforce that uniformly for owner-authored PRs. Both checks remain required, and these skills stop at PR delivery.
+## Third-party licenses
 
-Historical project context remains in [epic #7](https://github.com/thomaspmach/cognition-prototype/issues/7). The [fresh-session workflow report](https://github.com/thomaspmach/cognition-prototype/issues/5#issuecomment-5670914659) and [integrated verification report](https://github.com/thomaspmach/cognition-prototype/issues/6#issuecomment-5677708101) record the initial work. The [PR #15 acceptance report](https://github.com/thomaspmach/cognition-prototype/pull/15#issuecomment-5677710803) records the native reviewed path. These are revision-specific evidence, not prerequisites that every new tool must follow.
-
-### Preparing a fresh Devin Cloud session
-
-Select this repository and follow [Run locally](#run-locally) and [Commands and checks](#commands-and-checks). The repository blueprint managed in Devin's environment settings selects the pinned runtime, installs dependencies, rebuilds SQLite and installs Chromium. A snapshot is a starting environment, not evidence that the current revision has passed checks. Its maintenance dependency install is incremental; use the documented `npm ci` sequence for clean-checkout verification.
-
-The blueprint does not initialize a demonstration database or keep an application server running. Generate the local environment, migrate and seed only when initialization is needed; preserve existing settings/data. For write/reset verification, use a separate checkout and a new synthetic database path. Verify available ports before startup, keep the authentication origin consistent and avoid simultaneous dev/build processes in one checkout.
-
-Invoke the appropriate skill above with the business request and acceptance examples. Follow its maintained discovery, confirmation and PR procedure rather than duplicating that workflow in the request. Local startup or restart does not publish the application; no hosting account or production deployment is part of this setup.
-
-## Project map
-
-```text
-app/                       Routes, root layout and global design tokens
-app/(workspace)/           Authenticated shell, Overview and KYC page
-app/api/                   Better Auth and protected KYC route handlers
-components/workspace/      Shell and catalog
-components/kyc/            Functional KYC queue, details, actions and history
-components/shared/         Queue, detail, status, feedback and heading patterns
-components/motion/         Installed Be UI source
-lib/tool-registry.ts        Typed catalog/navigation metadata
-lib/kyc/                   Typed domain model, strict validation and initial presentation
-lib/server/                Server-only auth, database, schema and KYC service
-drizzle/                   Generated, committed SQLite migrations
-scripts/                   Local environment, migration and synthetic seed commands
-licenses/                  Third-party license notices
-tests/                     Focused unit/component and browser tests
-DESIGN.md                  Implemented visual specification
-```
-
-Available/foundation entries require a `/tools/...` route; preview entries require `route: null`. The discriminated registry type makes accidental preview routes invalid. Each tool owns its route content within the authenticated workspace layout.
-
-Secrets (`.env*`, private keys), local SQLite files, dependencies, test output and generated Next files are excluded by `.gitignore`. Never commit operational credentials.
-
-## Be UI integration and licenses
-
-There is no `beui` runtime package. The following actual source was installed from the [Be UI shadcn registry](https://beui.dev/docs/ai-agents.md), configured as `@beui` in `components.json`:
-
-```sh
-npx --yes shadcn@4.21.0 add \
-  @beui/animated-sidebar @beui/table @beui/drawer \
-  @beui/input @beui/animated-badge @beui/button-stateful
-```
-
-The registry also installs table internals, checkbox, button base, shared-layout and presence/hover/touch/easing helpers. Required runtime dependencies are `motion`, `lucide-react`, `clsx`, `tailwind-merge` and `@tanstack/react-virtual`. Their versions and all other dependencies are pinned in `package.json`. `focus-trap-react` supplies keyboard containment and focus return around the drawer.
-
-Source is retained unmodified, including provenance comments; workspace styling and Next links live in the compositions. The MIT notice is in `licenses/beui-MIT.txt`. The locally bundled Geist font (`@fontsource-variable/geist`) retains its SIL OFL notice in `licenses/geist-OFL.txt`. Shared visual and interaction standards are documented in `DESIGN.md`.
-
-ESLint checks the entire tree. Narrow overrides for installed Be UI source allow its synchronous DOM measurements, shared mutable refs, TanStack Virtual compatibility and empty interfaces; the stateful button additionally measures its label every render. Next's React Compiler is not enabled. These exceptions do not apply to workspace code; rules-of-hooks and other checks still apply to the installed source. Review upstream source changes before updating registry components.
+Installed Be UI source retains its [MIT notice](licenses/beui-MIT.txt); the bundled Geist font retains its [SIL OFL notice](licenses/geist-OFL.txt). See [integration details and upstream lint exceptions](docs/development.md#be-ui-integration-and-licenses) before updating vendor components.
